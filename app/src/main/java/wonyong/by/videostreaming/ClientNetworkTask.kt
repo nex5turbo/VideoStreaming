@@ -1,5 +1,6 @@
 package wonyong.by.videostreaming
 
+import android.net.wifi.p2p.WifiP2pDevice
 import android.os.AsyncTask
 import android.util.Log
 import java.io.DataInputStream
@@ -9,7 +10,7 @@ import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 
-class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskListener: ClientTaskListener) : AsyncTask<Void, Void, Void>() {
+class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskListener: ClientTaskListener, var di:DeviceInfo) : AsyncTask<Void, Void, Void>() {
 
     var CONST = Consts()
 
@@ -18,23 +19,30 @@ class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskL
 
         when(mode){
             CONST.L_WAITING_RECEIVE->{
-
+                Log.d("##onwait", "onwait")
                 var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
                 var socket = serverSocket.accept()
-
+                Log.d("##accept", "dd")
 
                 var inputStream = socket.getInputStream()
                 var dis = DataInputStream(inputStream)
 
                 var receiveMessage = dis.readUTF()
-                Log.d("##", receiveMessage)
-                taskListener.onWait()
+                Log.d("##receive", receiveMessage)
+                if(receiveMessage.equals(CONST.N_PLAY_VIDEO)){
+                    taskListener.playVideo()
+                }
+
             }
             CONST.N_ON_CONNECT->{
                 var socket = Socket(hostAddress, CONST.NETWORK_MESSAGE_PORT)
                 Log.d("###", hostAddress.toString())
                 Log.d("###", socket.inetAddress.toString())
                 Log.d("###", socket.localAddress.toString())
+
+                var dos = DataOutputStream(socket.getOutputStream())
+                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+di.widthMM+CONST.DELIMETER+di.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket.localAddress.toString())
+
 //                var outputStream = socket.getOutputStream()
 //                var dos = DataOutputStream(outputStream)
 //
@@ -43,12 +51,14 @@ class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskL
 //                var dis = DataInputStream(inputStream)
 //
 //                var receiveMessage = dis.readUTF()
+                taskListener.onWait()
                 socket.close()
 
             }
         }
         return null
     }
+
 }
 /*
  네트워크 시퀀스 -> 소켓이 열리면 클라에서 먼저 기기정보 전송을함

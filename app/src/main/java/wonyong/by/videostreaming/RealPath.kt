@@ -12,7 +12,7 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.loader.content.CursorLoader
 
-class RealPath {
+class RealPath() {
 
     fun getRealPath(context: Context, fileUri: Uri): String? {
         val realPath: String?
@@ -66,24 +66,27 @@ class RealPath {
 
     @SuppressLint("NewApi")
     fun getRealPathFromURI_API19(context: Context, uri: Uri): String? {
-
+        Log.d("####in", "ok")
         val isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
 
         // DocumentProvider
         if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            Log.d("####kitkat", "ok")
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
+                Log.d("####external", "ok")
                 val docId = DocumentsContract.getDocumentId(uri)
                 val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val type = split[0]
 
                 if ("primary".equals(type, ignoreCase = true)) {
+                    Log.d("####primary", "ok")
                     return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
                 }
 
                 // TODO handle non-primary volumes
             } else if (isDownloadsDocument(uri)) {
-
+                Log.d("####isdownload", "ok")
                 val id = DocumentsContract.getDocumentId(uri)
                 val contentUri = ContentUris.withAppendedId(
                     Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)
@@ -91,6 +94,7 @@ class RealPath {
 
                 return getDataColumn(context, contentUri, null, null)
             } else if (isMediaDocument(uri)) {
+                Log.d("####ismedia", "ok")
                 val docId = DocumentsContract.getDocumentId(uri)
                 val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val type = split[0]
@@ -110,10 +114,12 @@ class RealPath {
                 return getDataColumn(context, contentUri, selection, selectionArgs)
             }
         } else if ("content".equals(uri.scheme!!, ignoreCase = true)) {
+            Log.d("####content", "ok")
 
             return if (isGooglePhotosUri(uri)) uri.lastPathSegment else getDataColumn(context, uri, null, null)
 
         } else if ("file".equals(uri.scheme!!, ignoreCase = true)) {
+            Log.d("####file", "ok")
             return uri.path
         }
 

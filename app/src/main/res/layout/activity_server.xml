@@ -46,23 +46,25 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content" android:id="@+id/serverWifiDirectRefreshButton"
             app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectDisconnectButton" android:layout_marginBottom="7dp"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectSendVideoButton"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectPlayVideoButton"
             app:layout_constraintStart_toStartOf="parent"/>
+
     <Button
+            android:id="@+id/serverWifiDirectPlayVideoButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
             android:ems="10"
-            android:id="@+id/serverWifiDirectSendVideoButton"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectRefreshButton"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:inputType="textPersonName"
+            android:text="비디오 재생"
             app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectFindVideoButton"
-            app:layout_constraintStart_toStartOf="parent" android:text="비디오 전송"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectRefreshButton" />
     <Button
             android:text="비디오선택"
             android:layout_width="0dp"
             android:layout_height="wrap_content" android:id="@+id/serverWifiDirectFindVideoButton"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectSendVideoButton" android:layout_marginBottom="10dp"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectPlayVideoButton" android:layout_marginBottom="10dp"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

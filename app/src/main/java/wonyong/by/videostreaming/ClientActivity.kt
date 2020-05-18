@@ -2,6 +2,7 @@ package wonyong.by.videostreaming
 
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.wifi.WifiManager
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_client.*
+import kotlinx.android.synthetic.main.activity_server.*
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -47,6 +49,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var deviceInfo: DeviceInfo
     val CONST = Consts()
+    var resultPath : String? = null
     var connectedDevice = 0
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
 
@@ -69,14 +72,15 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
 
     private fun buttonListener() {
         clientWifiDirectConnectButton.setOnClickListener {
-            if (wifiManager.isWifiEnabled()) {
-                wifiManager.setWifiEnabled(false)
-                clientWifiDirectConnectButton.setText("Wifi-On")
-
-            } else {
-                wifiManager.setWifiEnabled(true)
-                clientWifiDirectConnectButton.setText("Wifi-Off")
-            }
+//            if (wifiManager.isWifiEnabled()) {
+//                wifiManager.setWifiEnabled(false)
+//                clientWifiDirectConnectButton.setText("Wifi-On")
+//
+//            } else {
+//                wifiManager.setWifiEnabled(true)
+//                clientWifiDirectConnectButton.setText("Wifi-Off")
+//            }
+            callAsyncTask(CONST.N_ON_CONNECT)
         }
 
         clientWifiDirectTcpButton.setOnClickListener {
@@ -151,10 +155,10 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         }
 
         clientWifiDirectFindVideoButton.setOnClickListener {
-//            var ip = getDottedDecimalIP(getLocalIPAddress()!!)
-//            clientWifiDirectConnectionStatus.setText(ip)
-            callAsyncTask(CONST.N_ON_CONNECT)
-            clientWifiDirectTitle.setText(hostAddress.toString())
+            var i = Intent(Intent.ACTION_GET_CONTENT)
+            i.setType("video/*")
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivityForResult(i, 2)
         }
     }
 
@@ -251,47 +255,40 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     }
 
     fun callAsyncTask(mode:String){
-        task = ClientNetworkTask(mode, hostAddress, this)
+        task = ClientNetworkTask(mode, hostAddress, this, deviceInfo)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
     override fun onWait() {
+        Log.d("##onwait", "onwait")
         callAsyncTask(CONST.L_WAITING_RECEIVE)
     }
 
-    fun getLocalIPAddress():ByteArray? {
-        var en:Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
-        while(en.hasMoreElements()){
-            Log.d("###", "local")
-            var intf : NetworkInterface = en.nextElement()
-            var enumIpAddr:Enumeration<InetAddress> = intf.inetAddresses
-            while(enumIpAddr.hasMoreElements()){
-                var inetAddress : InetAddress = enumIpAddr.nextElement()
-                if(!inetAddress.isLoopbackAddress){
-                    if (inetAddress is Inet4Address){
-                        return inetAddress.address
-                    }
-                }
-            }
-        }
-        return null
-    }
-
-    fun getDottedDecimalIP(ipAddr:ByteArray):String {
-
-        Log.d("###", "dotted")
-        var ipAddrStr:String = ""
-        for(i in 0..ipAddr.size-1){
-            if(i > 0){
-                ipAddrStr += "."
-            }
-            ipAddrStr += ipAddr[i] and 0xFF.toByte()
-        }
-        return ipAddrStr
-    }
 
     override fun showAddr(addr: InetAddress) {
         clientWifiDirectConnectionStatus.setText(addr.toString())
         clientWifiDirectConnectButton.setText(hostAddress.toString())
+    }
+
+    override fun playVideo() {
+        if(resultPath == null){
+            Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val i = Intent(this, ClientPlayerActivity::class.java)
+        i.putExtra("videoPath", resultPath)
+        startActivity(i)
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(resultCode == RESULT_OK){
+            if(requestCode == 2){
+                var realPath = RealPath()
+                var uri = data?.data
+                resultPath = realPath.getRealPath(this, uri!!)
+                Log.e("###", resultPath)
+                Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

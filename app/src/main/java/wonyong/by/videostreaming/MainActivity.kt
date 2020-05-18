@@ -3,8 +3,10 @@ package wonyong.by.videostreaming
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pDevice
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.telephony.TelephonyManager
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import androidx.core.app.ActivityCompat
@@ -61,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         var thisDevice = WifiP2pDevice()
         var displayInfo = DisplayMetrics()
 
+
         windowManager.defaultDisplay.getMetrics(displayInfo)
         var widthPixel = displayInfo.widthPixels
         var heightPixel = displayInfo.heightPixels
@@ -68,9 +71,9 @@ class MainActivity : AppCompatActivity() {
         var widthMM = widthPixel / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, displayInfo)
         var heightMM = heightPixel / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, displayInfo)
 
-        deviceInfo = DeviceInfo(thisDevice.deviceName.toString(), widthPixel, heightPixel, widthMM, heightMM, 0, null)
+        deviceInfo = DeviceInfo(widthPixel, heightPixel, widthMM, heightMM, 0, null)
 
-        toastAct.toast(deviceInfo.deviceName.toString(), this)
+        toastAct.toast(Build.ID, this)
 
 
     }

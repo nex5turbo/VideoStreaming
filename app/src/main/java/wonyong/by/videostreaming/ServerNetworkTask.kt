@@ -8,42 +8,57 @@ import java.io.DataOutputStream
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.*
 
-class ServerNetworkTask(var mode : String, var textView: TextView, var addr:String) : AsyncTask<Void, Void, Void>() {
+class ServerNetworkTask(var mode : String, var textView: TextView, var taskListener: ServerTaskListener, var clientList : ArrayList<DeviceInfo>) : AsyncTask<Void, Void, Void>() {
     var CONST = Consts()
     override fun doInBackground(vararg p0: Void?): Void? {
 
-//        var ss = ServerSocket(8888)
-//        var socket : Socket = ss.accept()
-//        var addr = socket.inetAddress
-//        Log.d("###loc",socket.localAddress.toString())
-//
-//
-//        var inputStream = socket.getInputStream()
-//        var dis = DataInputStream(inputStream)
-//        var msg = dis.readUTF()
-//        Log.d("###msg", msg)
-//        return null
-
         when(mode){
             CONST.N_ON_CONNECT->{
+                Log.d("###", "inner")
                 var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
                 var socket = serverSocket.accept()
 
-                ui(socket.inetAddress.toString())
+                var dis = DataInputStream(socket.getInputStream())
+                var receiveMessage = dis.readUTF()
+                var st : StringTokenizer
+                st = StringTokenizer(receiveMessage, CONST.DELIMETER)
+                var heightPixel = st.nextToken()
+                Log.d("hp", heightPixel)
+                var widthPixel = st.nextToken()
+                Log.d("hp", widthPixel)
+                var widthMM = st.nextToken()
+                Log.d("hp", widthMM)
+                var heightMM = st.nextToken()
+                var deviceOrder = st.nextToken()
+                var inetAddress = st.nextToken()
+                Log.d("###", heightMM+CONST.DELIMETER+heightPixel+CONST.DELIMETER+widthMM+CONST.DELIMETER+widthPixel+CONST.DELIMETER+deviceOrder+CONST.DELIMETER+inetAddress)
+
+                ui(receiveMessage)
+                taskListener.addClientDeviceInfo(heightPixel.toInt(), widthPixel.toInt(), widthMM.toFloat(), heightMM.toFloat(), deviceOrder.toInt(), socket.localAddress.toString())
                 socket.close()
                 serverSocket.close()
+
+
             }
 
 
             CONST.N_SEND_MESSAGE->{
-                var socket = Socket(addr, CONST.NETWORK_MESSAGE_PORT)//아이피주소 받아와서 여기두개 넣어줘야함
-                var outputStream = socket.getOutputStream()
-                var dos = DataOutputStream(outputStream)
 
-                dos.writeUTF("test message"+CONST.DELIMETER+socket.localAddress)
-                dos.close()
-                socket.close()
+            }
+
+            CONST.N_PLAY_VIDEO->{
+                Log.d("##N_PLAY_VIDEO", "out")
+                for(deviceInfo:DeviceInfo in clientList){
+                    Log.d("##N_PLAY_VIDEO", deviceInfo.inetAddress)
+                    var socket = Socket(deviceInfo.inetAddress, CONST.NETWORK_MESSAGE_PORT)
+                    var dos = DataOutputStream(socket.getOutputStream())
+                    Log.d("##N_PLAY_VIDEO", "socket")
+                    dos.writeUTF(CONST.N_PLAY_VIDEO)
+                    Log.d("##N_PLAY_VIDEO", "send")
+                    socket.close()
+                }
             }
         }
         return null

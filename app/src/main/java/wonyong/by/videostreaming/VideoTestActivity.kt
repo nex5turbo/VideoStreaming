@@ -49,7 +49,6 @@ class VideoTestActivity : AppCompatActivity() {
     fun selectMovie(){
         var i = Intent(Intent.ACTION_GET_CONTENT)
         i.setType("video/*")
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivityForResult(i, 2)
     }
 

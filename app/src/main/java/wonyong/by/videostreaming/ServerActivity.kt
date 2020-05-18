@@ -17,12 +17,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_client.*
 import kotlinx.android.synthetic.main.activity_server.*
 import java.net.InetAddress
 
 
-class ServerActivity : AppCompatActivity() {
+class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     //위젯 정보 시작
     lateinit var widgetConnectButton : Button
@@ -41,8 +40,8 @@ class ServerActivity : AppCompatActivity() {
     lateinit var intentFilter : IntentFilter
     lateinit var deviceNameArray:Array<String?>
     lateinit var deviceArray:Array<WifiP2pDevice?>
-    lateinit var deviceInfo: DeviceInfo
-    var deviceInfoList = ArrayList<DeviceInfo>()
+    lateinit var serverDeviceInfo: DeviceInfo
+    var clientDeviceInfoList = ArrayList<DeviceInfo>()
     var resultPath : String? = null
     val CONST = Consts()
     var connectedDevice = 1
@@ -60,19 +59,20 @@ class ServerActivity : AppCompatActivity() {
     }
 
     private fun getInfo() {
-        deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+        serverDeviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
     }
 
 
     private fun buttonListener() {
         serverWifiDirectConnectButton.setOnClickListener {
-            if (wifiManager.isWifiEnabled()) {
-                wifiManager.setWifiEnabled(false)
-                serverWifiDirectConnectButton.setText("Wifi-On")
-            } else {
-                wifiManager.setWifiEnabled(true)
-                serverWifiDirectConnectButton.setText("Wifi-Off")
-            }
+//            if (wifiManager.isWifiEnabled()) {
+//                wifiManager.setWifiEnabled(false)
+//                serverWifiDirectConnectButton.setText("Wifi-On")
+//            } else {
+//                wifiManager.setWifiEnabled(true)
+//                serverWifiDirectConnectButton.setText("Wifi-Off")
+//            }
+            callAsyncTask(CONST.N_ON_CONNECT)
         }
 
 
@@ -121,31 +121,20 @@ class ServerActivity : AppCompatActivity() {
                 }
             })
         }
-        serverWifiDirectSendVideoButton.setOnClickListener {
-//            callAsyncTask(CONST.N_SEND_MESSAGE)
-            wifiP2pManager.requestGroupInfo(wifiP2pChannel, object : WifiP2pManager.GroupInfoListener{
-                override fun onGroupInfoAvailable(group: WifiP2pGroup?) {
-                    if(group == null){
-                        clientWifiDirectConnectionStatus.setText("시발")
-                    }else {
-                        val tempWifiP2pDeviceList =
-                            ArrayList(group?.clientList)
-                        if(tempWifiP2pDeviceList[0].deviceAddress == null) {
-                            clientWifiDirectConnectionStatus.setText("no")
-                        }else{
-                            Toast.makeText(this@ServerActivity, tempWifiP2pDeviceList[0].deviceAddress.toString(), Toast.LENGTH_LONG).show()
-                            callAsyncTask(CONST.N_SEND_MESSAGE, tempWifiP2pDeviceList[0].deviceAddress)
-                        }
-                    }
-                }
-            })
+        serverWifiDirectPlayVideoButton.setOnClickListener {
+            if(resultPath == null){
+                Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
+            }
+
+            callAsyncTask(CONST.N_PLAY_VIDEO)
+            val i = Intent(this, ServerPlayerActivity::class.java)
+            i.putExtra("videoPath", resultPath)
+            startActivity(i)
         }
         serverWifiDirectFindVideoButton.setOnClickListener {
-//            var i = Intent(Intent.ACTION_GET_CONTENT)
-//            i.setType("video/*")
-//            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-//            startActivityForResult(i, 2)
-            callAsyncTask(CONST.N_ON_CONNECT, "")
+            var i = Intent(Intent.ACTION_GET_CONTENT)
+            i.setType("video/*")
+            startActivityForResult(i, 2)
         }
     }
 
@@ -247,6 +236,7 @@ class ServerActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if(resultCode == RESULT_OK){
             if(requestCode == 2){
+                Log.e("###", "resultPath")
                 var realPath = RealPath()
                 var uri = data?.data
                 resultPath = realPath.getRealPath(this, uri!!)
@@ -257,9 +247,20 @@ class ServerActivity : AppCompatActivity() {
         }
     }
 
-    fun callAsyncTask(mode:String, addr:String){
-        task = ServerNetworkTask(mode, serverWifiDirectTitle, addr)
+    fun callAsyncTask(mode:String){
+        task = ServerNetworkTask(mode, serverWifiDirectTitle, this, clientDeviceInfoList)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
+    override fun addClientDeviceInfo(
+        heightPixel: Int,
+        widthPixel: Int,
+        widthMM: Float,
+        heightMM: Float,
+        deviceOrder: Int,
+        inetAddress: String
+    ) {
+        var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, inetAddress)
+        clientDeviceInfoList.add(di)
+    }
 }
