@@ -48,6 +48,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var deviceNameArray:Array<String?>
     lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var deviceInfo: DeviceInfo
+    var localAddress = ""
     val CONST = Consts()
     var resultPath : String? = null
     var connectedDevice = 0
@@ -80,6 +81,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
 //                wifiManager.setWifiEnabled(true)
 //                clientWifiDirectConnectButton.setText("Wifi-Off")
 //            }
+            localAddress = getDottedDecimalIP(getLocalIPAddress()!!)
             callAsyncTask(CONST.N_ON_CONNECT)
         }
 
@@ -255,7 +257,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     }
 
     fun callAsyncTask(mode:String){
-        task = ClientNetworkTask(mode, hostAddress, this, deviceInfo)
+        task = ClientNetworkTask(mode, localAddress, hostAddress, this, deviceInfo)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
@@ -290,5 +292,40 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
                 Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    fun getLocalIPAddress():ByteArray?{
+        val en = NetworkInterface.getNetworkInterfaces()
+        while (en.hasMoreElements())
+        {
+            val intf = en.nextElement()
+            val enumIpAddr = intf.getInetAddresses()
+            while (enumIpAddr.hasMoreElements())
+            {
+                val inetAddress = enumIpAddr.nextElement()
+                if (!inetAddress.isLoopbackAddress())
+                {
+                    if (inetAddress is Inet4Address)
+                    { // fix for Galaxy Nexus. IPv4 is easy to use :-)
+                        return inetAddress.getAddress()
+                    }
+                    //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
+                }
+            }
+        }
+        return null
+    }
+
+    fun getDottedDecimalIP(ipAddr:ByteArray):String{
+        var ipAddrString = ""
+        for (i in 0 until ipAddr.size)
+        {
+            if (i > 0)
+            {
+                ipAddrString += "."
+            }
+            ipAddrString += ipAddr[i] and 0xFF.toByte()
+        }
+        return ipAddrString
     }
 }

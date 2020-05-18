@@ -36,7 +36,8 @@ class ServerNetworkTask(var mode : String, var textView: TextView, var taskListe
                 Log.d("###", heightMM+CONST.DELIMETER+heightPixel+CONST.DELIMETER+widthMM+CONST.DELIMETER+widthPixel+CONST.DELIMETER+deviceOrder+CONST.DELIMETER+inetAddress)
 
                 ui(receiveMessage)
-                taskListener.addClientDeviceInfo(heightPixel.toInt(), widthPixel.toInt(), widthMM.toFloat(), heightMM.toFloat(), deviceOrder.toInt(), socket.localAddress.toString())
+                taskListener.addClientDeviceInfo(heightPixel.toInt(), widthPixel.toInt(), widthMM.toFloat(), heightMM.toFloat(), deviceOrder.toInt(), inetAddress)
+                taskListener.playVideo()
                 socket.close()
                 serverSocket.close()
 
@@ -53,6 +54,11 @@ class ServerNetworkTask(var mode : String, var textView: TextView, var taskListe
                 for(deviceInfo:DeviceInfo in clientList){
                     Log.d("##N_PLAY_VIDEO", deviceInfo.inetAddress)
                     var socket = Socket(deviceInfo.inetAddress, CONST.NETWORK_MESSAGE_PORT)
+                    while(!socket.isConnected){
+                        socket.close()
+                        socket = Socket(deviceInfo.inetAddress, CONST.NETWORK_MESSAGE_PORT)
+                        Log.d("##N_PLAY_VIDEO", "loop")
+                    }
                     var dos = DataOutputStream(socket.getOutputStream())
                     Log.d("##N_PLAY_VIDEO", "socket")
                     dos.writeUTF(CONST.N_PLAY_VIDEO)

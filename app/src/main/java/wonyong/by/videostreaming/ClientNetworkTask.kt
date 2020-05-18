@@ -10,7 +10,7 @@ import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 
-class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskListener: ClientTaskListener, var di:DeviceInfo) : AsyncTask<Void, Void, Void>() {
+class ClientNetworkTask(var mode:String, var localAddress : String, var hostAddress: InetAddress, var taskListener: ClientTaskListener, var di:DeviceInfo) : AsyncTask<Void, Void, Void>() {
 
     var CONST = Consts()
 
@@ -21,7 +21,9 @@ class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskL
             CONST.L_WAITING_RECEIVE->{
                 Log.d("##onwait", "onwait")
                 var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
+                Log.d("##serversocket", "onwait")
                 var socket = serverSocket.accept()
+                socket.soTimeout = 1000
                 Log.d("##accept", "dd")
 
                 var inputStream = socket.getInputStream()
@@ -41,7 +43,7 @@ class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskL
                 Log.d("###", socket.localAddress.toString())
 
                 var dos = DataOutputStream(socket.getOutputStream())
-                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+di.widthMM+CONST.DELIMETER+di.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket.localAddress.toString())
+                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+di.widthMM+CONST.DELIMETER+di.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket.localAddress)
 
 //                var outputStream = socket.getOutputStream()
 //                var dos = DataOutputStream(outputStream)
@@ -51,8 +53,10 @@ class ClientNetworkTask(var mode:String, var hostAddress: InetAddress, var taskL
 //                var dis = DataInputStream(inputStream)
 //
 //                var receiveMessage = dis.readUTF()
-                taskListener.onWait()
+                taskListener.playVideo()
                 socket.close()
+                taskListener.onWait()
+
 
             }
         }

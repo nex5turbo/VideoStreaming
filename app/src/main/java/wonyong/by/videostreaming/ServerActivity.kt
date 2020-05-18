@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.*
 import android.os.AsyncTask
@@ -18,7 +19,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_server.*
+import java.net.Inet4Address
 import java.net.InetAddress
+import java.net.NetworkInterface
+import kotlin.experimental.and
 
 
 class ServerActivity : AppCompatActivity(), ServerTaskListener{
@@ -73,6 +77,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 //                serverWifiDirectConnectButton.setText("Wifi-Off")
 //            }
             callAsyncTask(CONST.N_ON_CONNECT)
+
         }
 
 
@@ -127,15 +132,19 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
             }
 
             callAsyncTask(CONST.N_PLAY_VIDEO)
-            val i = Intent(this, ServerPlayerActivity::class.java)
-            i.putExtra("videoPath", resultPath)
-            startActivity(i)
+
         }
         serverWifiDirectFindVideoButton.setOnClickListener {
             var i = Intent(Intent.ACTION_GET_CONTENT)
             i.setType("video/*")
             startActivityForResult(i, 2)
         }
+    }
+
+    override fun playVideo() {
+        val i = Intent(this, ServerPlayerActivity::class.java)
+        i.putExtra("videoPath", resultPath)
+        startActivity(i)
     }
 
     private fun init() {
@@ -263,4 +272,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, inetAddress)
         clientDeviceInfoList.add(di)
     }
+
+
+
 }
