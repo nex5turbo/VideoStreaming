@@ -1,23 +1,26 @@
 package wonyong.by.videostreaming
 
-import android.annotation.SuppressLint
-import android.content.*
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.database.Cursor
-import android.net.Uri
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.*
-import android.os.*
-import androidx.appcompat.app.AppCompatActivity
-import android.provider.DocumentsContract
-import android.provider.MediaStore
+import android.os.AsyncTask
+import android.os.Bundle
+import android.os.Looper
 import android.util.Log
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.loader.content.CursorLoader
+import kotlinx.android.synthetic.main.activity_client.*
 import kotlinx.android.synthetic.main.activity_server.*
 import java.net.InetAddress
+
 
 class ServerActivity : AppCompatActivity() {
 
@@ -39,6 +42,7 @@ class ServerActivity : AppCompatActivity() {
     lateinit var deviceNameArray:Array<String?>
     lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var deviceInfo: DeviceInfo
+    var deviceInfoList = ArrayList<DeviceInfo>()
     var resultPath : String? = null
     val CONST = Consts()
     var connectedDevice = 1
@@ -118,13 +122,30 @@ class ServerActivity : AppCompatActivity() {
             })
         }
         serverWifiDirectSendVideoButton.setOnClickListener {
-            callAsyncTask(CONST.N_SEND_MESSAGE)
+//            callAsyncTask(CONST.N_SEND_MESSAGE)
+            wifiP2pManager.requestGroupInfo(wifiP2pChannel, object : WifiP2pManager.GroupInfoListener{
+                override fun onGroupInfoAvailable(group: WifiP2pGroup?) {
+                    if(group == null){
+                        clientWifiDirectConnectionStatus.setText("시발")
+                    }else {
+                        val tempWifiP2pDeviceList =
+                            ArrayList(group?.clientList)
+                        if(tempWifiP2pDeviceList[0].deviceAddress == null) {
+                            clientWifiDirectConnectionStatus.setText("no")
+                        }else{
+                            Toast.makeText(this@ServerActivity, tempWifiP2pDeviceList[0].deviceAddress.toString(), Toast.LENGTH_LONG).show()
+                            callAsyncTask(CONST.N_SEND_MESSAGE, tempWifiP2pDeviceList[0].deviceAddress)
+                        }
+                    }
+                }
+            })
         }
         serverWifiDirectFindVideoButton.setOnClickListener {
-            var i = Intent(Intent.ACTION_GET_CONTENT)
-            i.setType("video/*")
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivityForResult(i, 2)
+//            var i = Intent(Intent.ACTION_GET_CONTENT)
+//            i.setType("video/*")
+//            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//            startActivityForResult(i, 2)
+            callAsyncTask(CONST.N_ON_CONNECT, "")
         }
     }
 
@@ -162,9 +183,11 @@ class ServerActivity : AppCompatActivity() {
                     deviceNameArray[index] = device.deviceName
                     deviceArray[index] = device
                     index++
+
                 }
 
-                var nameAdapter : ArrayAdapter<String> = ArrayAdapter<String>(applicationContext, android.R.layout.simple_list_item_1, deviceNameArray)
+                var nameAdapter : ArrayAdapter<String> =
+                    ArrayAdapter<String>(applicationContext, android.R.layout.simple_list_item_1, deviceNameArray)!!
                 serverWifiDirectListView.setAdapter(nameAdapter)
             }
             if(peers.size == 0){
@@ -234,8 +257,8 @@ class ServerActivity : AppCompatActivity() {
         }
     }
 
-    fun callAsyncTask(mode:String){
-        task = ServerNetworkTask(mode, serverWifiDirectTitle)
+    fun callAsyncTask(mode:String, addr:String){
+        task = ServerNetworkTask(mode, serverWifiDirectTitle, addr)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 

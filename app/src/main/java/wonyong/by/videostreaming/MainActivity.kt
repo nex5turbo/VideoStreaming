@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         var widthMM = widthPixel / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, displayInfo)
         var heightMM = heightPixel / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, displayInfo)
 
-        deviceInfo = DeviceInfo(thisDevice.deviceName.toString(), widthPixel, heightPixel, widthMM, heightMM, 0)
+        deviceInfo = DeviceInfo(thisDevice.deviceName.toString(), widthPixel, heightPixel, widthMM, heightMM, 0, null)
 
         toastAct.toast(deviceInfo.deviceName.toString(), this)
 
