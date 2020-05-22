@@ -5,6 +5,7 @@ import android.os.AsyncTask
 import android.util.Log
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.io.IOException
 import java.io.OutputStream
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -20,20 +21,22 @@ class ClientNetworkTask(var mode:String, var localAddress : String, var hostAddr
         when(mode){
             CONST.L_WAITING_RECEIVE->{
                 Log.d("##onwait", "onwait")
-                var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
-                Log.d("##serversocket", "onwait")
-                var socket = serverSocket.accept()
-                socket.soTimeout = 1000
-                Log.d("##accept", "dd")
 
-                var inputStream = socket.getInputStream()
-                var dis = DataInputStream(inputStream)
+                    var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
+                    serverSocket.setReuseAddress(true)
+                    Log.d("##serversocket", "onwait")
+                    var socket = serverSocket.accept()
+                    Log.d("##accept", "dd")
 
-                var receiveMessage = dis.readUTF()
-                Log.d("##receive", receiveMessage)
-                if(receiveMessage.equals(CONST.N_PLAY_VIDEO)){
-                    taskListener.playVideo()
-                }
+                    var inputStream = socket.getInputStream()
+                    var dis = DataInputStream(inputStream)
+
+                    var receiveMessage = dis.readUTF()
+                    Log.d("##receive", receiveMessage)
+                    if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
+                        taskListener.playVideo()
+                    }
+
 
             }
             CONST.N_ON_CONNECT->{
@@ -53,7 +56,7 @@ class ClientNetworkTask(var mode:String, var localAddress : String, var hostAddr
 //                var dis = DataInputStream(inputStream)
 //
 //                var receiveMessage = dis.readUTF()
-                taskListener.playVideo()
+                dos.close()
                 socket.close()
                 taskListener.onWait()
 

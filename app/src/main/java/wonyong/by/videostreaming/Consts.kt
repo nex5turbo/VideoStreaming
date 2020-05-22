@@ -11,6 +11,6 @@ class Consts {
     val N_SEND_MESSAGE = "N_SEND_MESSAGE"
     val N_PLAY_VIDEO = "N_PLAY_VIDEO"
     val DELIMETER = "%^%"
-    val NETWORK_MESSAGE_PORT = 8888
+    val NETWORK_MESSAGE_PORT = 8081
     val NETWORK_DATA_PORT = 8889
 }
