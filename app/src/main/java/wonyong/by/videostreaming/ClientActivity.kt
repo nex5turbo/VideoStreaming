@@ -22,6 +22,7 @@ import kotlinx.android.synthetic.main.activity_server.*
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.net.Socket
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.experimental.and
@@ -36,10 +37,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var widgetTitle : TextView
     //위젯정보 끝
 
-
+    var socket : Socket? = null
     lateinit var hostAddress : InetAddress
     lateinit var task : ClientNetworkTask
-    var deviceList = arrayListOf<DeviceInfo>()
     lateinit var wifiManager:WifiManager
     lateinit var wifiP2pManager : WifiP2pManager;
     lateinit var wifiP2pChannel : WifiP2pManager.Channel
@@ -51,7 +51,6 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     var localAddress = ""
     val CONST = Consts()
     var resultPath : String? = null
-    var connectedDevice = 0
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
 
 
@@ -81,7 +80,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
 //                wifiManager.setWifiEnabled(true)
 //                clientWifiDirectConnectButton.setText("Wifi-Off")
 //            }
-            localAddress = getDottedDecimalIP(getLocalIPAddress()!!)
+
             callAsyncTask(CONST.N_ON_CONNECT)
         }
 
@@ -106,6 +105,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
                     }
 
                     override fun onFailure(i: Int) {
+                        Log.d("###", i.toString())
                         clientWifiDirectConnectionStatus.setText("검색실패")
                     }
                 })
@@ -257,7 +257,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     }
 
     fun callAsyncTask(mode:String){
-        task = ClientNetworkTask(mode, localAddress, hostAddress, this, deviceInfo)
+        task = ClientNetworkTask(mode, this)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 

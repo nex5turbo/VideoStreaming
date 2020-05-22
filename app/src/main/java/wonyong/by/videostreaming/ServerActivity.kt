@@ -19,9 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_server.*
-import java.net.Inet4Address
-import java.net.InetAddress
-import java.net.NetworkInterface
+import java.net.*
 import kotlin.experimental.and
 
 
@@ -35,6 +33,9 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     lateinit var widgetStatusTextView : TextView
     //위젯정보 끝
 
+    val CONST = Consts()
+    var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
+    var socket : Socket? = null
     lateinit var task :ServerNetworkTask
     var deviceList = arrayListOf<DeviceInfo>()
     lateinit var wifiManager:WifiManager
@@ -47,7 +48,6 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     lateinit var serverDeviceInfo: DeviceInfo
     var clientDeviceInfoList = ArrayList<DeviceInfo>()
     var resultPath : String? = null
-    val CONST = Consts()
     var connectedDevice = 1
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
 
@@ -76,6 +76,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 //                wifiManager.setWifiEnabled(true)
 //                serverWifiDirectConnectButton.setText("Wifi-Off")
 //            }
+
             callAsyncTask(CONST.N_ON_CONNECT)
 
         }
@@ -258,7 +259,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     }
 
     fun callAsyncTask(mode:String){
-        task = ServerNetworkTask(mode, serverWifiDirectTitle, this, clientDeviceInfoList)
+        task = ServerNetworkTask(mode, this)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 

@@ -7,25 +7,28 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.lang.Exception
+import java.lang.ref.WeakReference
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.*
 
-class ServerNetworkTask(var mode : String, var textView: TextView, var taskListener: ServerTaskListener, var clientList : ArrayList<DeviceInfo>) : AsyncTask<Void, Void, Void>() {
+class ServerNetworkTask(var mode : String, var activity: ServerActivity) : AsyncTask<Void, Void, Void>() {
     var CONST = Consts()
     override fun doInBackground(vararg p0: Void?): Void? {
+
+        var dataRef= WeakReference(activity)
+        var serverActivity = dataRef.get()
+        var socket = serverActivity?.socket
 
         when(mode){
             CONST.N_ON_CONNECT->{
                 Log.d("###", "inner")
 
-                var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
-                serverSocket.setReuseAddress(true)
-                var socket = serverSocket.accept()
-
-                    var dis = DataInputStream(socket.getInputStream())
+                socket = serverActivity?.serverSocket?.accept()
+                serverActivity?.socket = socket
+                    var dis = DataInputStream(socket?.getInputStream())
                     var receiveMessage = dis.readUTF()
                     var st: StringTokenizer
                     st = StringTokenizer(receiveMessage, CONST.DELIMETER)
@@ -43,7 +46,7 @@ class ServerNetworkTask(var mode : String, var textView: TextView, var taskListe
                         heightMM + CONST.DELIMETER + heightPixel + CONST.DELIMETER + widthMM + CONST.DELIMETER + widthPixel + CONST.DELIMETER + deviceOrder + CONST.DELIMETER + inetAddress
                     )
 
-                    taskListener.addClientDeviceInfo(
+                    serverActivity?.addClientDeviceInfo(
                         heightPixel.toInt(),
                         widthPixel.toInt(),
                         widthMM.toFloat(),
@@ -51,9 +54,8 @@ class ServerNetworkTask(var mode : String, var textView: TextView, var taskListe
                         deviceOrder.toInt(),
                         inetAddress
                     )
-                    dis.close()
-                    socket.close()
-                    serverSocket.close()
+
+
 
 
             }
@@ -65,17 +67,13 @@ class ServerNetworkTask(var mode : String, var textView: TextView, var taskListe
 
             CONST.N_PLAY_VIDEO->{
                 Log.d("##N_PLAY_VIDEO", "out")
-                for(deviceInfo:DeviceInfo in clientList){
-                    Log.d("##N_PLAY_VIDEO", deviceInfo.inetAddress)
-                    var socket = Socket(deviceInfo.inetAddress, CONST.NETWORK_MESSAGE_PORT)
 
-                    var dos = DataOutputStream(socket.getOutputStream())
-                    Log.d("##N_PLAY_VIDEO", "socket")
-                    dos.writeUTF(CONST.N_PLAY_VIDEO)
-                    Log.d("##N_PLAY_VIDEO", "send")
-                    dos.close()
-                    socket.close()
-                }
+                var dos = DataOutputStream(socket?.getOutputStream())
+                Log.d("##N_PLAY_VIDEO", "socket")
+                dos.writeUTF(CONST.N_PLAY_VIDEO)
+                Log.d("##N_PLAY_VIDEO", "send")
+                serverActivity?.playVideo()
+
             }
         }
         return null

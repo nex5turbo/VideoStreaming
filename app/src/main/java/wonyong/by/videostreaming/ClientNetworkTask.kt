@@ -1,5 +1,6 @@
 package wonyong.by.videostreaming
 
+import android.content.Context
 import android.net.wifi.p2p.WifiP2pDevice
 import android.os.AsyncTask
 import android.util.Log
@@ -7,46 +8,50 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.lang.ref.WeakReference
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 
-class ClientNetworkTask(var mode:String, var localAddress : String, var hostAddress: InetAddress, var taskListener: ClientTaskListener, var di:DeviceInfo) : AsyncTask<Void, Void, Void>() {
+class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncTask<Void, Void, Void>() {
 
     var CONST = Consts()
 
     override fun doInBackground(vararg p0: Void?): Void? {
-
+        var dataRef = WeakReference(activity)
+        var clientActivity = dataRef.get()
+        var socket = clientActivity?.socket
 
         when(mode){
             CONST.L_WAITING_RECEIVE->{
-                Log.d("##onwait", "onwait")
 
-                    var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
-                    serverSocket.setReuseAddress(true)
-                    Log.d("##serversocket", "onwait")
-                    var socket = serverSocket.accept()
+                var inputStream = socket!!.getInputStream()
+                while(inputStream == null){
+                    inputStream = socket?.getInputStream()
                     Log.d("##accept", "dd")
+                }
+                var dis = DataInputStream(inputStream)
+                var receiveMessage = dis.readUTF()
 
-                    var inputStream = socket.getInputStream()
-                    var dis = DataInputStream(inputStream)
-
-                    var receiveMessage = dis.readUTF()
-                    Log.d("##receive", receiveMessage)
-                    if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
-                        taskListener.playVideo()
-                    }
-
+                Log.d("##receive", receiveMessage)
+                if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
+                    clientActivity?.playVideo()
+                    clientActivity?.onWait()
+                }
 
             }
             CONST.N_ON_CONNECT->{
-                var socket = Socket(hostAddress, CONST.NETWORK_MESSAGE_PORT)
-                Log.d("###", hostAddress.toString())
-                Log.d("###", socket.inetAddress.toString())
-                Log.d("###", socket.localAddress.toString())
 
-                var dos = DataOutputStream(socket.getOutputStream())
-                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+di.widthMM+CONST.DELIMETER+di.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket.localAddress)
+                socket = Socket(clientActivity?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
+                clientActivity?.socket = socket
+                clientActivity?.localAddress ="for test"
+
+                Log.d("###", clientActivity?.localAddress)
+                Log.d("###", socket?.inetAddress.toString())
+                Log.d("###", socket?.localAddress.toString())
+
+                var dos = DataOutputStream(socket?.getOutputStream())
+                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+clientActivity?.deviceInfo?.widthMM+CONST.DELIMETER+clientActivity?.deviceInfo?.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket?.localAddress)
 
 //                var outputStream = socket.getOutputStream()
 //                var dos = DataOutputStream(outputStream)
@@ -55,10 +60,8 @@ class ClientNetworkTask(var mode:String, var localAddress : String, var hostAddr
 //                var inputStream = socket.getInputStream()
 //                var dis = DataInputStream(inputStream)
 //
-//                var receiveMessage = dis.readUTF()
-                dos.close()
-                socket.close()
-                taskListener.onWait()
+//                var receiveMessage = dis.readUTF()f
+                clientActivity?.onWait()
 
 
             }
