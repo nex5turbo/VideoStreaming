@@ -9,6 +9,7 @@ import java.net.Socket
 class ClientPlayerActivity : AppCompatActivity() {
 
     var videoPath = ""
+    var hostAddress = ""
     lateinit var deviceInfo: DeviceInfo
     var socket : Socket? = null
 
@@ -17,7 +18,7 @@ class ClientPlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_client_player)
 
         videoPath = intent.getStringExtra("videoPath")
-//        deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+        hostAddress = intent.getStringExtra("hostAddress")
         var mc = MediaController(this@ClientPlayerActivity)
         clientVideoView.setMediaController(mc)
         clientVideoView.setVideoPath(videoPath)

@@ -25,8 +25,9 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity) : Async
                 Log.d("###", "inner")
                 serverActivity?.serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
                 serverActivity?.serverSocket?.reuseAddress = true
-                socket = serverActivity?.serverSocket?.accept()
-                serverActivity?.socket = socket
+                for(i in 0..1) {
+                    socket = serverActivity?.serverSocket?.accept()
+                    serverActivity?.socket = socket
                     var dis = DataInputStream(socket?.getInputStream())
                     var receiveMessage = dis.readUTF()
                     var st: StringTokenizer
@@ -53,57 +54,66 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity) : Async
                         deviceOrder.toInt(),
                         socket!!
                     )
+                }
 
             }
 
             CONST.N_REQUEST_READY_FILE_TRANSFER->{
-                var dos = DataOutputStream(socket?.getOutputStream())
-                dos.writeUTF(CONST.N_REQUEST_READY_FILE_TRANSFER)
+                for(di:DeviceInfo in serverActivity!!.clientDeviceInfoList) {
+                    var diSocket = di.socket
+                    var dos = DataOutputStream(diSocket?.getOutputStream())
+                    dos.writeUTF(CONST.N_REQUEST_READY_FILE_TRANSFER)
 
-                var dis = DataInputStream(socket?.getInputStream())
-                var receiveMessage = dis.readUTF()
-                if(receiveMessage.equals(CONST.N_READY_FILE_TRANSFER)){
-                    //파일전송 시퀀스
-                    dos.writeUTF(serverActivity?.fileName)
+                    var dis = DataInputStream(diSocket?.getInputStream())
+                    var receiveMessage = dis.readUTF()
+                    if (receiveMessage.equals(CONST.N_READY_FILE_TRANSFER)) {
+                        //파일전송 시퀀스
+                        dos.writeUTF(serverActivity?.fileName)
 
 
-                    var file = File(serverActivity?.resultPath+ "/" +serverActivity?.fileName)
-                    Log.d("FileSize", file.length().toString())
-                    var fis = FileInputStream(file)
-                    var bis = BufferedInputStream(fis)
+                        var file = File(serverActivity?.resultPath + "/" + serverActivity?.fileName)
+                        Log.d("FileSize", file.length().toString())
+                        var fis = FileInputStream(file)
+                        var bis = BufferedInputStream(fis)
 
-                    var len : Int
-                    var lenSum = 0
-                    var size = 1024
-                    var data = ByteArray(size)
-                    while(true){
-                        len = bis.read(data)
-                        lenSum = lenSum + len
-                        Log.d("###", len.toString())
-                        if(len == -1){
-                            break
+                        var len: Int
+                        var lenSum = 0
+                        var size = 1024
+                        var data = ByteArray(size)
+                        while (true) {
+                            len = bis.read(data)
+                            lenSum = lenSum + len
+                            Log.d("###", len.toString())
+                            if (len == -1) {
+                                break
+                            }
+                            dos.write(data, 0, len)
+
                         }
-                        dos.write(data, 0, len)
-
+                        dos.flush()
+                        dos.close()
+                        diSocket?.close()
+                        Log.d("###", "파일전송 완료")
+                        serverActivity?.filetransferOver()
+                        di.socket = serverActivity?.serverSocket?.accept()
+                    } else {
+                        return null
                     }
-                    dos.flush()
-                    dos.close()
-                    serverActivity?.socket?.close()
-                    serverActivity?.serverSocket?.close()
-                    serverActivity?.callAsyncTask(CONST.N_ON_CONNECT)
-                    Log.d("###", "파일전송 완료")
-                    serverActivity?.filetransferOver()
-                }else{
-                    return null
                 }
+
+
+
             }
 
 
 
             CONST.N_PLAY_VIDEO->{
-                var dos = DataOutputStream(socket?.getOutputStream())
-                dos.writeUTF(CONST.N_PLAY_VIDEO)
-                serverActivity?.playVideo()
+                for(di : DeviceInfo in serverActivity!!.clientDeviceInfoList) {
+                    var diSocket = di.socket
+                    var dos = DataOutputStream(diSocket?.getOutputStream())
+                    dos.writeUTF(CONST.N_PLAY_VIDEO)
+                    serverActivity?.playVideo()
+                }
 
             }
         }

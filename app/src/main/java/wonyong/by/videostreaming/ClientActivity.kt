@@ -76,21 +76,11 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
 
     private fun buttonListener() {
         clientWifiDirectConnectButton.setOnClickListener {
-//            if (wifiManager.isWifiEnabled()) {
-//                wifiManager.setWifiEnabled(false)
-//                clientWifiDirectConnectButton.setText("Wifi-On")
-//
-//            } else {
-//                wifiManager.setWifiEnabled(true)
-//                clientWifiDirectConnectButton.setText("Wifi-Off")
-//            }
-
             callAsyncTask(CONST.N_ON_CONNECT)
         }
 
         clientWifiDirectTcpButton.setOnClickListener {
-            callAsyncTask(CONST.L_WAITING_RECEIVE)
-
+//            callAsyncTask(CONST.L_WAITING_RECEIVE)
         }
 
         clientWifiDirectRefreshButton.setOnClickListener {
@@ -293,6 +283,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         }
         val i = Intent(this, ClientPlayerActivity::class.java)
         i.putExtra("videoPath", storage + "/" + fileName)
+        i.putExtra("hostAddress", hostAddress.toString())
 //        i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }

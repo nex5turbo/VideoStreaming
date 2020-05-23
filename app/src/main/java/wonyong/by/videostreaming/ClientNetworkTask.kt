@@ -68,7 +68,8 @@ class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncT
                 Log.d("###", "before on wait")
                 clientActivity?.filetransferOver()
                 clientActivity?.socket?.close()
-                clientActivity?.callAsyncTask(CONST.N_ON_CONNECT)
+                clientActivity?.socket = Socket(clientActivity?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
+                clientActivity?.onWait()
             }
             CONST.N_ON_CONNECT->{
 
