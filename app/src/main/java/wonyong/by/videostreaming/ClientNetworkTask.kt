@@ -23,41 +23,52 @@ class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncT
             CONST.L_WAITING_RECEIVE->{
 
                 var inputStream = socket?.getInputStream()
-                while(inputStream == null){
-                    inputStream = socket?.getInputStream()
-                    Log.d("##accept", "dd")
-                }
+
                 var dis = DataInputStream(inputStream)
                 var receiveMessage = dis.readUTF()
 
                 Log.d("##receive", receiveMessage)
                 if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
                     clientActivity?.playVideo()
-                    clientActivity?.onWait()
                 }else if(receiveMessage.equals(CONST.N_REQUEST_READY_FILE_TRANSFER)){
                     var dos = DataOutputStream(socket?.getOutputStream())
                     dos.writeUTF(CONST.N_READY_FILE_TRANSFER)
                     receiveMessage = dis.readUTF()
+                    clientActivity?.fileName = receiveMessage
                     var file = File(clientActivity?.storage + "/" + receiveMessage)
                     var fos = FileOutputStream(file)
                     var bos = BufferedOutputStream(fos)
 
-                    var len : Int
+                    var len : Int = 0
+                    var lenSum = 0
                     var size = 1024
                     var data = ByteArray(size)
-                    data@while(true){
-                        len = dis.read(data)
-                        if(len ==-1){
-                            break@data
+                    while(len > -1){
+                        if(len == -1){
+                            Log.d("###", "finish")
+                            break
                         }
-                        Log.d("###", "inner")
+                        Log.d("###", "before")
+                        len = dis.read(data)
+                        Log.d("###", "after")
+                        if(len == -1){
+                            Log.d("###", "finish")
+                            break
+                        }
+
+                        lenSum = lenSum + len
+                        Log.d("###", "len#" + len.toString())
+                        Log.d("###", "lenSum" + lenSum.toString())
+
                         bos.write(data, 0, len)
                     }
+
                     Log.d("###", "File transfer over")
-                    clientActivity?.onWait()
-
                 }
-
+                Log.d("###", "before on wait")
+                clientActivity?.filetransferOver()
+                clientActivity?.socket?.close()
+                clientActivity?.callAsyncTask(CONST.N_ON_CONNECT)
             }
             CONST.N_ON_CONNECT->{
 
@@ -72,7 +83,7 @@ class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncT
 
                 var dos = DataOutputStream(socket?.getOutputStream())
                 dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+clientActivity?.deviceInfo?.widthMM+CONST.DELIMETER+clientActivity?.deviceInfo?.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket?.localAddress)
-
+                dos.flush()
 //                var outputStream = socket.getOutputStream()
 //                var dos = DataOutputStream(outputStream)
 //

@@ -23,7 +23,8 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity) : Async
         when(mode){
             CONST.N_ON_CONNECT->{
                 Log.d("###", "inner")
-
+                serverActivity?.serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
+                serverActivity?.serverSocket?.reuseAddress = true
                 socket = serverActivity?.serverSocket?.accept()
                 serverActivity?.socket = socket
                     var dis = DataInputStream(socket?.getInputStream())
@@ -53,9 +54,6 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity) : Async
                         socket!!
                     )
 
-
-
-
             }
 
             CONST.N_REQUEST_READY_FILE_TRANSFER->{
@@ -75,34 +73,36 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity) : Async
                     var bis = BufferedInputStream(fis)
 
                     var len : Int
+                    var lenSum = 0
                     var size = 1024
                     var data = ByteArray(size)
                     while(true){
                         len = bis.read(data)
+                        lenSum = lenSum + len
+                        Log.d("###", len.toString())
                         if(len == -1){
                             break
                         }
                         dos.write(data, 0, len)
 
                     }
+                    dos.flush()
+                    dos.close()
+                    serverActivity?.socket?.close()
+                    serverActivity?.serverSocket?.close()
+                    serverActivity?.callAsyncTask(CONST.N_ON_CONNECT)
                     Log.d("###", "파일전송 완료")
+                    serverActivity?.filetransferOver()
                 }else{
                     return null
                 }
             }
 
 
-            CONST.N_SEND_MESSAGE->{
-
-            }
 
             CONST.N_PLAY_VIDEO->{
-                Log.d("##N_PLAY_VIDEO", "out")
-
                 var dos = DataOutputStream(socket?.getOutputStream())
-                Log.d("##N_PLAY_VIDEO", "socket")
                 dos.writeUTF(CONST.N_PLAY_VIDEO)
-                Log.d("##N_PLAY_VIDEO", "send")
                 serverActivity?.playVideo()
 
             }

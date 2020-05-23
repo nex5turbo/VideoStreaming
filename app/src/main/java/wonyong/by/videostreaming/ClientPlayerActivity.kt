@@ -17,7 +17,7 @@ class ClientPlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_client_player)
 
         videoPath = intent.getStringExtra("videoPath")
-        deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+//        deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
         var mc = MediaController(this@ClientPlayerActivity)
         clientVideoView.setMediaController(mc)
         clientVideoView.setVideoPath(videoPath)

@@ -52,9 +52,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var deviceInfo: DeviceInfo
     var localAddress = ""
     val CONST = Consts()
-    var resultPath : String? = null
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
     var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming"
+    var fileName = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -287,27 +287,16 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     }
 
     override fun playVideo() {
-        if(resultPath == null){
+        if(fileName == ""){
             Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
             return
         }
         val i = Intent(this, ClientPlayerActivity::class.java)
-        i.putExtra("videoPath", resultPath)
-        i.putExtra("deviceInfo", deviceInfo)
+        i.putExtra("videoPath", storage + "/" + fileName)
+//        i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(resultCode == RESULT_OK){
-            if(requestCode == 2){
-                var realPath = RealPath()
-                var uri = data?.data
-                resultPath = realPath.getRealPath(this, uri!!)
-                Log.e("###", resultPath)
-                Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+
 
     fun getLocalIPAddress():ByteArray?{
         val en = NetworkInterface.getNetworkInterfaces()
@@ -342,5 +331,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
             ipAddrString += ipAddr[i] and 0xFF.toByte()
         }
         return ipAddrString
+    }
+
+    override fun filetransferOver() {
+        clientWifiDirectConnectionStatus.setText("파일전송이 완료되었습니다.")
     }
 }

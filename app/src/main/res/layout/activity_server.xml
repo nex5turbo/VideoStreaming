@@ -1,70 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".WifiDirectActivity" android:orientation="vertical">
-    <TextView
-            android:text="Wifi-Direct Connection"
-            android:layout_width="0dp"
-            android:layout_height="0dp" android:id="@+id/serverWifiDirectTitle" android:gravity="center"
-            android:textSize="50sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectConnectionStatus"
-            app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
-    <TextView
-            android:text="Connecting Status"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" android:id="@+id/serverWifiDirectConnectionStatus" android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectTitle" app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectListView"
-            app:layout_constraintStart_toStartOf="parent"/>
-    <ListView
-            android:layout_width="0dp"
-            android:layout_height="0dp" android:id="@+id/serverWifiDirectListView"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectConnectionStatus"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectConnectButton"
-            app:layout_constraintStart_toStartOf="parent"/>
-    <Button
-            android:text="와이파이 연결"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" android:id="@+id/serverWifiDirectConnectButton"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectListView" app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectDisconnectButton"
-            app:layout_constraintStart_toStartOf="parent"/>
-    <Button
-            android:text="연결해제"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" android:id="@+id/serverWifiDirectDisconnectButton"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectConnectButton" android:layout_marginBottom="7dp"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectRefreshButton"
-            app:layout_constraintStart_toStartOf="parent"/>
-    <Button
-            android:text="연결가능기기 찾기"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" android:id="@+id/serverWifiDirectRefreshButton"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectDisconnectButton" android:layout_marginBottom="7dp"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectPlayVideoButton"
-            app:layout_constraintStart_toStartOf="parent"/>
-
+        android:orientation="vertical" tools:context=".WifiDirectActivity">
     <Button
             android:id="@+id/serverWifiDirectPlayVideoButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" android:text="동시 재생"
+            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectConnectButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectListView"
+    />
+    <TextView
+            android:id="@+id/serverWifiDirectTitle"
+            android:layout_width="0dp"
+            android:layout_height="0dp" android:gravity="center" android:text="Wifi-Direct Connection"
+            android:textSize="50sp"
+            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectConnectionStatus"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+    <TextView
+            android:id="@+id/serverWifiDirectConnectionStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" android:gravity="center"
+            android:text="Connecting Status"
+            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectListView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectTitle"
+    />
+    <ListView
+            android:id="@+id/serverWifiDirectListView"
+            android:layout_width="0dp" android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectPlayVideoButton"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectConnectionStatus"
+    />
+    <Button
+            android:id="@+id/serverWifiDirectConnectButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" android:text="와이파이 연결"
+            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectDisconnectButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectPlayVideoButton"
+    />
+    <Button
+            android:id="@+id/serverWifiDirectDisconnectButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:text="연결해제"
+            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectRefreshButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectConnectButton"
+    />
+    <Button
+            android:id="@+id/serverWifiDirectRefreshButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:text="연결가능기기 찾기"
+            app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectSendVideoButton"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectDisconnectButton"
+    />
+
+    <Button
+            android:id="@+id/serverWifiDirectSendVideoButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="비디오 재생"
+            android:text="비디오 전송"
             app:layout_constraintBottom_toTopOf="@+id/serverWifiDirectFindVideoButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectRefreshButton" />
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectRefreshButton"
+    />
     <Button
-            android:text="비디오선택"
+            android:id="@+id/serverWifiDirectFindVideoButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content" android:id="@+id/serverWifiDirectFindVideoButton"
-            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectPlayVideoButton" android:layout_marginBottom="10dp"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="9dp"
+            android:text="비디오선택"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serverWifiDirectSendVideoButton"
+    />
 </androidx.constraintlayout.widget.ConstraintLayout>

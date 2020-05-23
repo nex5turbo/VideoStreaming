@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.*
 import android.os.AsyncTask
@@ -22,7 +21,6 @@ import kotlinx.android.synthetic.main.activity_server.*
 import java.net.*
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.experimental.and
 
 
 class ServerActivity : AppCompatActivity(), ServerTaskListener{
@@ -36,7 +34,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     //위젯정보 끝
 
     val CONST = Consts()
-    var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
+    var serverSocket : ServerSocket? = null
     var socket : Socket? = null
     lateinit var task :ServerNetworkTask
     var deviceList = arrayListOf<DeviceInfo>()
@@ -72,18 +70,12 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     private fun buttonListener() {
         serverWifiDirectConnectButton.setOnClickListener {
-//            if (wifiManager.isWifiEnabled()) {
-//                wifiManager.setWifiEnabled(false)
-//                serverWifiDirectConnectButton.setText("Wifi-On")
-//            } else {
-//                wifiManager.setWifiEnabled(true)
-//                serverWifiDirectConnectButton.setText("Wifi-Off")
-//            }
-
             callAsyncTask(CONST.N_ON_CONNECT)
-
         }
 
+        serverWifiDirectPlayVideoButton.setOnClickListener {
+            callAsyncTask(CONST.N_PLAY_VIDEO)
+        }
 
 
         serverWifiDirectRefreshButton.setOnClickListener {//현재 접속한 기기 목록을 띄우도록
@@ -130,7 +122,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 }
             })
         }
-        serverWifiDirectPlayVideoButton.setOnClickListener {
+        serverWifiDirectSendVideoButton.setOnClickListener {
             if(resultPath == null){
                 Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
             }
@@ -147,7 +139,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     override fun playVideo() {
         val i = Intent(this, ServerPlayerActivity::class.java)
-        i.putExtra("videoPath", resultPath)
+        i.putExtra("videoPath", resultPath + "/" + fileName)
         startActivity(i)
     }
 
@@ -298,6 +290,9 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         clientDeviceInfoList.add(di)
     }
 
+    override fun filetransferOver() {
+        serverWifiDirectConnectionStatus.setText("파일전송이 완료되었습니다.")
+    }
 
 
 }

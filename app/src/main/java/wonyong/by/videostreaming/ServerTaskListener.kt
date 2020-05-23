@@ -6,4 +6,5 @@ interface ServerTaskListener {
 
     fun addClientDeviceInfo(heightPixel:Int, widthPixel:Int, widthMM:Float,  heightMM:Float, deviceOrder:Int, sock : Socket)
     fun playVideo()
+    fun filetransferOver()
 }
