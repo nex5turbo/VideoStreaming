@@ -35,13 +35,7 @@ class VideoTestActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_test)
 
-        if(ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,
-                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
-                90)
-        }
+
         selectMovie()
 
     }

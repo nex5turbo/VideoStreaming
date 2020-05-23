@@ -10,6 +10,7 @@ import android.net.wifi.WpsInfo
 import android.net.wifi.p2p.*
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Environment
 import android.os.Looper
 import android.util.Log
 import android.view.View
@@ -19,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_client.*
 import kotlinx.android.synthetic.main.activity_server.*
+import java.io.File
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -52,6 +54,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     val CONST = Consts()
     var resultPath : String? = null
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
+    var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +64,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         getInfo()
         init()
         buttonListener()
+
 
     }
 
@@ -179,8 +183,18 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         widgetDisconnectButton = clientWifiDirectDisconnectButton
         widgetRefreshButton = clientWifiDirectRefreshButton
         widgetTitle = clientWifiDirectTitle
+        dircheck()
+    }
 
+    fun dircheck(){
+        var dir = File(storage)
+        Log.d("makedir", "before")
+        if(!dir.exists()) {
 
+            Log.d("makedir", dir.mkdirs().toString())
+        }else{
+            Log.d("makedir", "exist")
+        }
     }
 
     var peerListListener : WifiP2pManager.PeerListListener = object : WifiP2pManager.PeerListListener{
@@ -279,6 +293,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         }
         val i = Intent(this, ClientPlayerActivity::class.java)
         i.putExtra("videoPath", resultPath)
+        i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

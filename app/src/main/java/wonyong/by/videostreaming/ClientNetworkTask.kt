@@ -4,10 +4,7 @@ import android.content.Context
 import android.net.wifi.p2p.WifiP2pDevice
 import android.os.AsyncTask
 import android.util.Log
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.IOException
-import java.io.OutputStream
+import java.io.*
 import java.lang.ref.WeakReference
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -25,7 +22,7 @@ class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncT
         when(mode){
             CONST.L_WAITING_RECEIVE->{
 
-                var inputStream = socket!!.getInputStream()
+                var inputStream = socket?.getInputStream()
                 while(inputStream == null){
                     inputStream = socket?.getInputStream()
                     Log.d("##accept", "dd")
@@ -37,6 +34,28 @@ class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncT
                 if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
                     clientActivity?.playVideo()
                     clientActivity?.onWait()
+                }else if(receiveMessage.equals(CONST.N_REQUEST_READY_FILE_TRANSFER)){
+                    var dos = DataOutputStream(socket?.getOutputStream())
+                    dos.writeUTF(CONST.N_READY_FILE_TRANSFER)
+                    receiveMessage = dis.readUTF()
+                    var file = File(clientActivity?.storage + "/" + receiveMessage)
+                    var fos = FileOutputStream(file)
+                    var bos = BufferedOutputStream(fos)
+
+                    var len : Int
+                    var size = 1024
+                    var data = ByteArray(size)
+                    data@while(true){
+                        len = dis.read(data)
+                        if(len ==-1){
+                            break@data
+                        }
+                        Log.d("###", "inner")
+                        bos.write(data, 0, len)
+                    }
+                    Log.d("###", "File transfer over")
+                    clientActivity?.onWait()
+
                 }
 
             }
@@ -49,6 +68,7 @@ class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncT
                 Log.d("###", clientActivity?.localAddress)
                 Log.d("###", socket?.inetAddress.toString())
                 Log.d("###", socket?.localAddress.toString())
+                clientActivity?.deviceInfo?.socket = socket
 
                 var dos = DataOutputStream(socket?.getOutputStream())
                 dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+clientActivity?.deviceInfo?.widthMM+CONST.DELIMETER+clientActivity?.deviceInfo?.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket?.localAddress)

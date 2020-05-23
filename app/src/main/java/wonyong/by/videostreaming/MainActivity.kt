@@ -35,6 +35,21 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(android.Manifest.permission.READ_PHONE_STATE),
                 90)
         }
+
+        if(ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                110)
+        }
+        if(ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                120)
+        }
     }
 
     private fun buttonListener() {

@@ -16,6 +16,7 @@ class ServerPlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_server_player)
 
         videoPath = intent.getStringExtra("videoPath")
+
         Log.d("####videopath", videoPath)
         var mc = MediaController(this@ServerPlayerActivity)
         serverVideoView.setMediaController(mc)

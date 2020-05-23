@@ -20,6 +20,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_server.*
 import java.net.*
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.experimental.and
 
 
@@ -48,6 +50,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     lateinit var serverDeviceInfo: DeviceInfo
     var clientDeviceInfoList = ArrayList<DeviceInfo>()
     var resultPath : String? = null
+    var fileName = ""
     var connectedDevice = 1
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
 
@@ -132,7 +135,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
             }
 
-            callAsyncTask(CONST.N_PLAY_VIDEO)
+            callAsyncTask(CONST.N_REQUEST_READY_FILE_TRANSFER)
 
         }
         serverWifiDirectFindVideoButton.setOnClickListener {
@@ -252,10 +255,30 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 var uri = data?.data
                 resultPath = realPath.getRealPath(this, uri!!)
                 Log.e("###", resultPath)
+                splitPathName()
+                Log.e("###", resultPath)
+                Log.e("###", fileName)
                 Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
                 serverWifiDirectTitle.setText(resultPath)
             }
         }
+    }
+
+    fun splitPathName(){
+        var returnPath = ""
+        var tempString = ""
+        var token = StringTokenizer(resultPath, "/")
+        tempString = token.nextToken()
+        returnPath = "/" + tempString + "/"
+        while(true){
+            tempString = token.nextToken()
+            if(!token.hasMoreTokens()){
+                fileName = tempString
+                break
+            }
+            returnPath = returnPath + tempString + "/"
+        }
+        resultPath = returnPath.substring(0,returnPath.length-1)
     }
 
     fun callAsyncTask(mode:String){
@@ -269,9 +292,9 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         widthMM: Float,
         heightMM: Float,
         deviceOrder: Int,
-        inetAddress: String
+        sock : Socket
     ) {
-        var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, inetAddress)
+        var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, sock)
         clientDeviceInfoList.add(di)
     }
 
