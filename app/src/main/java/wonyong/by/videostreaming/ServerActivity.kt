@@ -70,7 +70,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     private fun buttonListener() {
         serverWifiDirectConnectButton.setOnClickListener {
-            callAsyncTask(CONST.N_ON_CONNECT)
+            callAsyncTask(CONST.L_ON_CONNECT)
         }
 
         serverWifiDirectPlayVideoButton.setOnClickListener {
@@ -128,6 +128,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
             }
 
             callAsyncTask(CONST.N_REQUEST_READY_FILE_TRANSFER)
+            playEnable()
 
         }
         serverWifiDirectFindVideoButton.setOnClickListener {
@@ -158,6 +159,8 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         widgetDisconnectButton = serverWifiDirectDisconnectButton
         widgetRefreshButton = serverWifiDirectRefreshButton
         widgetTitle = serverWifiDirectTitle
+        serverWifiDirectPlayVideoButton.isEnabled = false
+        serverWifiDirectSendVideoButton.isEnabled = false
 
 
     }
@@ -252,6 +255,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 Log.e("###", fileName)
                 Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
                 serverWifiDirectTitle.setText(resultPath)
+                sendEnable()
             }
         }
     }
@@ -274,7 +278,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     }
 
     fun callAsyncTask(mode:String){
-        task = ServerNetworkTask(mode, this)
+        task = ServerNetworkTask(mode, this, null)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
@@ -292,6 +296,14 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     override fun filetransferOver() {
         serverWifiDirectConnectionStatus.setText("파일전송이 완료되었습니다.")
+    }
+
+    override fun sendEnable() {
+        serverWifiDirectSendVideoButton.isEnabled = true
+    }
+
+    override fun playEnable() {
+        serverWifiDirectPlayVideoButton.isEnabled = true
     }
 
 

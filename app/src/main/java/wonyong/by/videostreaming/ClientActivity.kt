@@ -19,13 +19,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_client.*
-import kotlinx.android.synthetic.main.activity_server.*
 import java.io.File
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.Socket
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.experimental.and
 
@@ -76,7 +74,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
 
     private fun buttonListener() {
         clientWifiDirectConnectButton.setOnClickListener {
-            callAsyncTask(CONST.N_ON_CONNECT)
+            callAsyncTask(CONST.L_ON_CONNECT)
         }
 
         clientWifiDirectTcpButton.setOnClickListener {
@@ -261,7 +259,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     }
 
     fun callAsyncTask(mode:String){
-        task = ClientNetworkTask(mode, this)
+        task = ClientNetworkTask(mode, this, null)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
@@ -283,7 +281,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         }
         val i = Intent(this, ClientPlayerActivity::class.java)
         i.putExtra("videoPath", storage + "/" + fileName)
-        i.putExtra("hostAddress", hostAddress.toString())
+        i.putExtra("hostAddress", hostAddress)
 //        i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }

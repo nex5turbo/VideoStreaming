@@ -36,13 +36,9 @@ class ServerBroadcastReceiver(var mManager : WifiP2pManager,
             if(mManager != null){
                 var networkInfo : NetworkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO)
                 if(networkInfo.isConnected){
-                    connectedDevice++
-                    mActivity.serverWifiDirectTitle.setText(connectedDevice.toString())
                     mManager.requestConnectionInfo(mChannel, mActivity.connectInfoListener)
                 }
                 else{
-                    connectedDevice--
-                    mActivity.serverWifiDirectTitle.setText(connectedDevice.toString())
                     mActivity.serverWifiDirectConnectionStatus.setText("연결끊김")
                 }
             }
