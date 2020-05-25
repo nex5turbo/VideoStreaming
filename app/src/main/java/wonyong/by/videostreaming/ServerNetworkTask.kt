@@ -3,6 +3,7 @@ package wonyong.by.videostreaming
 import android.os.AsyncTask
 import android.util.Log
 import java.io.*
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.net.ServerSocket
 import java.net.Socket
@@ -63,13 +64,15 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     var diSocket = di.socket
                     var dos = DataOutputStream(diSocket?.getOutputStream())
                     dos.writeUTF(CONST.N_REQUEST_READY_FILE_TRANSFER)
+                    dos.writeUTF(serverActivityData?.fileName)
 
                     var dis = DataInputStream(diSocket?.getInputStream())
                     var receiveMessage = dis.readUTF()
-                    if (receiveMessage.equals(CONST.N_READY_FILE_TRANSFER)) {
-                        //파일전송 시퀀스
-                        dos.writeUTF(serverActivityData?.fileName)
 
+                    if(receiveMessage.equals(CONST.N_FILE_EXIST)){
+                     continue
+                    }else if (receiveMessage.equals(CONST.N_READY_FILE_TRANSFER)) {
+                        //파일전송 시퀀스
 
                         var file = File(serverActivityData?.resultPath + "/" + serverActivityData?.fileName)
                         Log.d("FileSize", file.length().toString())
@@ -94,7 +97,7 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                         dos.close()
                         diSocket?.close()
                         Log.d("###", "파일전송 완료")
-                        serverActivityData?.filetransferOver()
+                        //serverActivityData?.filetransferOver()
                         di.socket = serverActivityData?.serverSocket?.accept()
                     } else {
                         return null
@@ -117,36 +120,57 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
             CONST.L_PLAYER_ON_CONNECT->{
                 playerActivityData?.playerServerSocket = ServerSocket(CONST.NETWORK_PLAYER_PORT)
                 playerActivityData?.playerServerSocket?.reuseAddress = true
+                //여기서 전송시간 계산해서 받아주기
                 for(i in 0..1){
-                    Log.d("###", "Before Socket Connect")
                     var tempSocket : Socket? = null
-                    Log.d("###", "Before Socket Connect2")
                     tempSocket = playerActivityData?.playerServerSocket?.accept()
-                    Log.d("###", "Before Socket Connect3")
                     playerActivityData?.socketList?.add(tempSocket!!)
-                    Log.d("###", "Before Socket Connect4")
-                }
-                playerActivityData?.playVideo()
+                    var beforeTime = System.currentTimeMillis()
+                    var dos = DataOutputStream(tempSocket?.getOutputStream())
+                    dos.writeUTF("PLAYER_ON_CONNECT")
 
+                    var dis = DataInputStream(tempSocket?.getInputStream())
+                    var receiveMessage = dis.readUTF()
+                    var afterTime = System.currentTimeMillis()
+                    var timeRate = afterTime - beforeTime
+                    dos.writeUTF(timeRate.toString())
+                    Log.d("###", timeRate.toString())
+                    playerActivityData?.timeRateArray?.add(timeRate)
+                }
+            }
+            CONST.N_PLAYER_PLAY->{
+                for(sock : Socket in playerSocketList!!){
+                    var dos = DataOutputStream(sock.getOutputStream())
+                    dos.writeUTF(CONST.N_PLAYER_PLAY)
+                }
+                sleep(playerActivityData!!.timeRateArray[0] * 40)
+                playerActivityData?.playVideo()
+            }
+            CONST.N_PLAYER_PAUSE->{
+                for(sock : Socket in playerSocketList!!){
+                    var dos = DataOutputStream(sock.getOutputStream())
+                    dos.writeUTF(CONST.N_PLAYER_PAUSE)
+                }
+                sleep(playerActivityData!!.timeRateArray[0] * 20)
+                playerActivityData?.pauseVideo()
+            }
+            CONST.N_PLAYER_BACKWARD->{
+                for(sock : Socket in playerSocketList!!){
+                    var dos = DataOutputStream(sock.getOutputStream())
+                    dos.writeUTF(CONST.N_PLAYER_BACKWARD)
+                    dos.writeUTF(playerActivityData?.nowPosition.toString())
+                }
+                playerActivityData?.backward(playerActivityData?.nowPosition)
+            }
+            CONST.N_PLAYER_FORWARD->{
+                for(sock : Socket in playerSocketList!!){
+                    var dos = DataOutputStream(sock.getOutputStream())
+                    dos.writeUTF(CONST.N_PLAYER_FORWARD)
+                    dos.writeUTF(playerActivityData?.nowPosition.toString())
+                }
+                playerActivityData?.forward(playerActivityData?.nowPosition)
             }
         }
         return null
     }
-
-
-
-
 }
-//socket.inetAddress->접속된 상대의 ip주소
-
-
-
-
-//fun runon(addr:InetAddress){
-//    var th = Thread(object :Runnable{
-//        override fun run() {
-//            Log.d("###addr", addr.toString())
-//            textView.setText(addr.toString())
-//        }
-//    }).start()
-//}

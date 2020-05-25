@@ -4,14 +4,46 @@
                                                    xmlns:tools="http://schemas.android.com/tools"
                                                    android:layout_width="match_parent"
                                                    android:layout_height="match_parent"
-                                                   tools:context=".ServerPlayerActivity">
+                                                   android:background="#00090808" tools:context=".ServerPlayerActivity">
 
     <VideoView
             android:id="@+id/serverVideoView"
             android:layout_width="0dp"
-            android:layout_height="575dp"
-            android:layout_marginTop="2dp"
+            android:layout_height="524dp"
+            android:layout_marginBottom="53dp" app:layout_constraintBottom_toTopOf="@+id/controllerPlayButton"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+    />
+    <Button
+            android:id="@+id/controllerPlayButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="play" app:layout_constraintBottom_toTopOf="@+id/controllerPauseButton"
+            app:layout_constraintStart_toEndOf="@+id/backwardButton"
+    />
+    <Button
+            android:id="@+id/controllerPauseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="1dp"
+            android:layout_marginBottom="56dp"
+            android:text="pause" app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/forwardButton"/>
+    <Button
+            android:id="@+id/backwardButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="back"
+            app:layout_constraintBaseline_toBaselineOf="@+id/controllerPlayButton"
+            app:layout_constraintStart_toStartOf="parent"
+    />
+    <Button
+            android:id="@+id/forwardButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginEnd="16dp"
+            android:text="for"
+            app:layout_constraintBaseline_toBaselineOf="@+id/controllerPauseButton"
+            app:layout_constraintEnd_toEndOf="parent"
     />
 </androidx.constraintlayout.widget.ConstraintLayout>

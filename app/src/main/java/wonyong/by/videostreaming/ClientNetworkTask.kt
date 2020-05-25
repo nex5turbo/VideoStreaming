@@ -1,8 +1,10 @@
 package wonyong.by.videostreaming
 
 import android.os.AsyncTask
+import android.os.Environment
 import android.util.Log
 import java.io.*
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.net.InetAddress
 import java.net.Socket
@@ -35,11 +37,21 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                     clientActivityData?.playVideo()
                     return null
                 }else if(receiveMessage.equals(CONST.N_REQUEST_READY_FILE_TRANSFER)){
-                    var dos = DataOutputStream(socket?.getOutputStream())
-                    dos.writeUTF(CONST.N_READY_FILE_TRANSFER)
+
                     receiveMessage = dis.readUTF()
                     clientActivityData?.fileName = receiveMessage
+                    var dos = DataOutputStream(socket?.getOutputStream())
                     var file = File(clientActivityData?.storage + "/" + receiveMessage)
+                    if(file.exists()){
+                        Log.d("###", file.exists().toString())
+                        dos.writeUTF(CONST.N_FILE_EXIST)
+                        clientActivityData?.filetransferOver()
+                        clientActivityData?.onWait()
+                        return null
+                    }
+                    dos.writeUTF(CONST.N_READY_FILE_TRANSFER)
+
+
                     var fos = FileOutputStream(file)
                     var bos = BufferedOutputStream(fos)
 
@@ -91,9 +103,43 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
             }
             CONST.L_PLAYER_ON_CONNECT->{
                 Log.d("###", "Before Socket Connect")
-                playerActivity?.socket = Socket(playerActivityData?.hostAddress, CONST.NETWORK_PLAYER_PORT)
+                playerActivityData?.socket = Socket(playerActivityData?.hostAddress, CONST.NETWORK_PLAYER_PORT)
+                var dis = DataInputStream(playerActivityData?.socket?.getInputStream())
+                var receiveMessage = dis.readUTF()
+
+                var dos = DataOutputStream(playerActivityData?.socket?.getOutputStream())
+                dos.writeUTF("PLAYER_ON_CONNECT")
+
+                receiveMessage = dis.readUTF()
+                playerActivityData?.timeRate = receiveMessage.toLong()
+
+                playerActivityData?.onWait()
                 Log.d("###", "Socket Connect")
             }
+            CONST.L_PLAYER_WAITING_RECEIVE->{
+                var dis = DataInputStream(playerActivityData?.socket?.getInputStream())
+                var receiveMessage = dis.readUTF()
+                when(receiveMessage){
+                    CONST.N_PLAYER_PLAY->{
+                        playerActivityData?.playVideo()
+                    }
+                    CONST.N_PLAYER_PAUSE->{
+                        playerActivityData?.pauseVideo()
+                    }
+                    CONST.N_PLAYER_FORWARD->{
+                        receiveMessage = dis.readUTF()
+                        var position = receiveMessage.toInt()
+                        playerActivityData?.forward(position)
+                    }
+                    CONST.N_PLAYER_BACKWARD->{
+                        receiveMessage = dis.readUTF()
+                        var position = receiveMessage.toInt()
+                        playerActivityData?.backward(position)
+                    }
+                }
+                playerActivityData?.onWait()
+            }
+
         }
         return null
     }
