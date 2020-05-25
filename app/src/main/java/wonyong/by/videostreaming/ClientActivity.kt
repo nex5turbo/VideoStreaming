@@ -24,10 +24,11 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.Socket
 import java.util.*
+import java.util.Collections.max
 import kotlin.collections.ArrayList
 import kotlin.experimental.and
 
-class ClientActivity : AppCompatActivity(), ClientTaskListener {
+class ClientActivity : AppCompatActivity(), ClientTaskListener  {
 
     //위젯 정보 시작
     lateinit var widgetConnectButton : Button
@@ -48,6 +49,8 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var deviceNameArray:Array<String?>
     lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var deviceInfo: DeviceInfo
+    lateinit var videoView : VideoView
+    lateinit var mediaController : MediaController
     var localAddress = ""
     val CONST = Consts()
     var resultPath : String? = null
@@ -59,6 +62,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         setContentView(R.layout.activity_client)
 
         getInfo()
+
         init()
         buttonListener()
 
@@ -68,6 +72,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
     }
 
+    private fun useInfo() {
+
+    }
 
 
     private fun buttonListener() {
@@ -277,8 +284,10 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
             Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
             return
         }
+
         val i = Intent(this, ClientPlayerActivity::class.java)
         i.putExtra("videoPath", resultPath)
+
         startActivity(i)
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
