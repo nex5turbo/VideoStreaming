@@ -10,6 +10,7 @@ import android.net.wifi.WpsInfo
 import android.net.wifi.p2p.*
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Environment
 import android.os.Looper
 import android.util.Log
 import android.view.View
@@ -18,17 +19,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_client.*
-import kotlinx.android.synthetic.main.activity_server.*
+import java.io.File
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.Socket
-import java.util.*
-import java.util.Collections.max
 import kotlin.collections.ArrayList
 import kotlin.experimental.and
 
-class ClientActivity : AppCompatActivity(), ClientTaskListener  {
+class ClientActivity : AppCompatActivity(), ClientTaskListener {
 
     //위젯 정보 시작
     lateinit var widgetConnectButton : Button
@@ -49,12 +48,11 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener  {
     lateinit var deviceNameArray:Array<String?>
     lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var deviceInfo: DeviceInfo
-    lateinit var videoView : VideoView
-    lateinit var mediaController : MediaController
     var localAddress = ""
     val CONST = Consts()
-    var resultPath : String? = null
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
+    var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming"
+    var fileName = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,9 +60,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener  {
         setContentView(R.layout.activity_client)
 
         getInfo()
-
         init()
         buttonListener()
+
 
     }
 
@@ -72,28 +70,15 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener  {
         deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
     }
 
-    private fun useInfo() {
-
-    }
 
 
     private fun buttonListener() {
         clientWifiDirectConnectButton.setOnClickListener {
-//            if (wifiManager.isWifiEnabled()) {
-//                wifiManager.setWifiEnabled(false)
-//                clientWifiDirectConnectButton.setText("Wifi-On")
-//
-//            } else {
-//                wifiManager.setWifiEnabled(true)
-//                clientWifiDirectConnectButton.setText("Wifi-Off")
-//            }
-
-            callAsyncTask(CONST.N_ON_CONNECT)
+            callAsyncTask(CONST.L_ON_CONNECT)
         }
 
         clientWifiDirectTcpButton.setOnClickListener {
-            callAsyncTask(CONST.L_WAITING_RECEIVE)
-
+//            callAsyncTask(CONST.L_WAITING_RECEIVE)
         }
 
         clientWifiDirectRefreshButton.setOnClickListener {
@@ -186,8 +171,18 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener  {
         widgetDisconnectButton = clientWifiDirectDisconnectButton
         widgetRefreshButton = clientWifiDirectRefreshButton
         widgetTitle = clientWifiDirectTitle
+        dircheck()
+    }
 
+    fun dircheck(){
+        var dir = File(storage)
+        Log.d("makedir", "before")
+        if(!dir.exists()) {
 
+            Log.d("makedir", dir.mkdirs().toString())
+        }else{
+            Log.d("makedir", "exist")
+        }
     }
 
     var peerListListener : WifiP2pManager.PeerListListener = object : WifiP2pManager.PeerListListener{
@@ -264,7 +259,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener  {
     }
 
     fun callAsyncTask(mode:String){
-        task = ClientNetworkTask(mode, this)
+        task = ClientNetworkTask(mode, this, null)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
@@ -280,28 +275,17 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener  {
     }
 
     override fun playVideo() {
-        if(resultPath == null){
+        if(fileName == ""){
             Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
             return
         }
-
         val i = Intent(this, ClientPlayerActivity::class.java)
-        i.putExtra("videoPath", resultPath)
-
+        i.putExtra("videoPath", storage + "/" + fileName)
+        i.putExtra("hostAddress", hostAddress)
+//        i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(resultCode == RESULT_OK){
-            if(requestCode == 2){
-                var realPath = RealPath()
-                var uri = data?.data
-                resultPath = realPath.getRealPath(this, uri!!)
-                Log.e("###", resultPath)
-                Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+
 
     fun getLocalIPAddress():ByteArray?{
         val en = NetworkInterface.getNetworkInterfaces()
@@ -336,5 +320,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener  {
             ipAddrString += ipAddr[i] and 0xFF.toByte()
         }
         return ipAddrString
+    }
+
+    override fun filetransferOver() {
+        clientWifiDirectConnectionStatus.setText("파일전송이 완료되었습니다.")
     }
 }

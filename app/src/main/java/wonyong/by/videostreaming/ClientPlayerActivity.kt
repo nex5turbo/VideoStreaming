@@ -1,87 +1,66 @@
 package wonyong.by.videostreaming
 
+import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.MediaController
 import kotlinx.android.synthetic.main.activity_client_player.*
-import android.view.ViewGroup
-import android.view.LayoutInflater
-import android.media.MediaPlayer
-import android.os.AsyncTask
-import android.util.DisplayMetrics
-import android.util.Log
-import android.util.TypedValue
-import android.view.MotionEvent
-import android.view.View
-import android.widget.FrameLayout
-import android.widget.VideoView
+import java.net.InetAddress
+import java.net.Socket
 
-class ClientPlayerActivity : AppCompatActivity() {
+class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
-    lateinit var deviceInfo : DeviceInfo
-    lateinit var vv : VideoView
-    lateinit var flc : FrameLayout
-    lateinit var lp : FrameLayout.LayoutParams
-    lateinit var waitTask : AsyncTask<Void, Void, String>
     var videoPath = ""
+    var hostAddress : InetAddress? = null
+    lateinit var deviceInfo: DeviceInfo
+    var socket : Socket? = null
+    var CONST = Consts()
+    var mediaController : MediaController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_client_player)
 
-        var intent = getIntent()
-        deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
 
-        var W = deviceInfo.widthMM
-        var H = deviceInfo.heightMM
-        var displyaMetrics = getApplicationContext().getResources().getDisplayMetrics()
+        buttonListener()
+        init()
+    }
 
-        W = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, W, displyaMetrics)
-        H = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, H, displyaMetrics)
+    private fun buttonListener() {
+        socketButton.setOnClickListener {
+            Log.d("###", "Before Task")
+            callAsyncTask(CONST.L_PLAYER_ON_CONNECT)
+        }
 
-        Log.v("ServerPlayerActivity", "afterAD : W = "+W+" / H = "+H)
+    }
 
-        var ax = deviceInfo.widthPixel
-        var ay = deviceInfo.heightPixel
-
-        ax = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, ax.toFloat(), displyaMetrics).toInt()
-
-        flc = findViewById(R.id.flc)
-        vv = findViewById(R.id.clientVideoView)
-
+    private fun init() {
         videoPath = intent.getStringExtra("videoPath")
-        var mc = MediaController(this@ClientPlayerActivity)
-
-        vv.setVideoPath(videoPath)
-        vv.seekTo(0)
-
-        vv.layoutParams.width = W.toInt()
-        vv.layoutParams.height = H.toInt()
-        vv.setX(ax.toFloat())
-        lp = FrameLayout.LayoutParams(W.toInt(), H.toInt())
-        lp.leftMargin = 0
-        lp.topMargin = 0
-        lp.rightMargin = 0
-        lp.bottomMargin = 0
-        vv.layoutParams = lp
-        vv.requestLayout()
-        flc.requestLayout()
-
-        vv.setOnPreparedListener(MediaPlayer.OnPreparedListener {
-            @Override
-            fun onPrepared(mediaPlayer: MediaPlayer){
-                mediaPlayer.isLooping = true
-            }
-        })
-
-        //waitTask = callClientTask
-
-        clientVideoView.setMediaController(mc)
-        clientVideoView.setVideoPath(videoPath)
-        clientVideoView.requestFocus()
-        vv.start()
+        hostAddress = intent.getSerializableExtra("hostAddress") as InetAddress
+        setVideo()
     }
 
 
-}
 
+    private fun setVideo() {
+        mediaController = MediaController(this@ClientPlayerActivity)
+        clientVideoView.setMediaController(mediaController)
+        clientVideoView.setVideoPath(videoPath)
+        clientVideoView.requestFocus()
+        clientVideoView.start()
+
+    }
+
+    fun callAsyncTask(mode:String){
+        var task = ClientNetworkTask(mode, null, this)
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+    }
+    override fun playVideo() {
+
+    }
+
+    override fun pauseVideo() {
+
+    }
+}

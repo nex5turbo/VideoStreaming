@@ -1,91 +1,101 @@
 package wonyong.by.videostreaming
 
-import android.content.Context
-import android.net.wifi.p2p.WifiP2pDevice
 import android.os.AsyncTask
 import android.util.Log
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.IOException
-import java.io.OutputStream
+import java.io.*
 import java.lang.ref.WeakReference
 import java.net.InetAddress
-import java.net.ServerSocket
 import java.net.Socket
 
-class ClientNetworkTask(var mode:String, var activity : ClientActivity) : AsyncTask<Void, Void, Void>() {
+class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val playerActivity: ClientPlayerActivity?) : AsyncTask<Void, Void, Void>() {
 
     var CONST = Consts()
+    var dataRef = WeakReference(activity)
+    var clientActivityData = dataRef.get()
+    var socket = clientActivityData?.socket
+
+    var playerDataRef = WeakReference(playerActivity)
+    var playerActivityData = playerDataRef.get()
+    var playerSocket = playerActivityData?.socket
 
     override fun doInBackground(vararg p0: Void?): Void? {
-        var dataRef = WeakReference(activity)
-        var clientActivity = dataRef.get()
-        var socket = clientActivity?.socket
+
 
         when(mode){
             CONST.L_WAITING_RECEIVE->{
 
-                var inputStream = socket!!.getInputStream()
-                while(inputStream == null){
-                    inputStream = socket?.getInputStream()
-                    Log.d("##accept", "dd")
-                }
+                var inputStream = socket?.getInputStream()
+
                 var dis = DataInputStream(inputStream)
                 var receiveMessage = dis.readUTF()
 
                 Log.d("##receive", receiveMessage)
                 if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
-                    clientActivity?.playVideo()
-                    clientActivity?.onWait()
+                    clientActivityData?.socket?.close()
+                    clientActivityData?.playVideo()
+                    return null
+                }else if(receiveMessage.equals(CONST.N_REQUEST_READY_FILE_TRANSFER)){
+                    var dos = DataOutputStream(socket?.getOutputStream())
+                    dos.writeUTF(CONST.N_READY_FILE_TRANSFER)
+                    receiveMessage = dis.readUTF()
+                    clientActivityData?.fileName = receiveMessage
+                    var file = File(clientActivityData?.storage + "/" + receiveMessage)
+                    var fos = FileOutputStream(file)
+                    var bos = BufferedOutputStream(fos)
+
+                    var len : Int = 0
+                    var lenSum = 0
+                    var size = 1024
+                    var data = ByteArray(size)
+                    while(len > -1){
+                        if(len == -1){
+                            break
+                        }
+                        len = dis.read(data)
+                        if(len == -1){
+                            break
+                        }
+
+                        lenSum = lenSum + len
+                        Log.d("###", "len#" + len.toString())
+                        Log.d("###", "lenSum" + lenSum.toString())
+
+                        bos.write(data, 0, len)
+                    }
+
+                    Log.d("###", "File transfer over")
+
+                    clientActivityData?.filetransferOver()
+                    clientActivityData?.socket?.close()
+                    clientActivityData?.socket = Socket(clientActivityData?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
                 }
-
+                Log.d("###", "before on wait")
+                clientActivityData?.onWait()
             }
-            CONST.N_ON_CONNECT->{
+            CONST.L_ON_CONNECT->{
 
-                socket = Socket(clientActivity?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
-                clientActivity?.socket = socket
-                clientActivity?.localAddress ="for test"
+                socket = Socket(clientActivityData?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
+                clientActivityData?.socket = socket
+                clientActivityData?.localAddress ="for test"
 
-                Log.d("###", clientActivity?.localAddress)
+                Log.d("###", clientActivityData?.localAddress)
                 Log.d("###", socket?.inetAddress.toString())
                 Log.d("###", socket?.localAddress.toString())
+                clientActivityData?.deviceInfo?.socket = socket
 
                 var dos = DataOutputStream(socket?.getOutputStream())
-                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+clientActivity?.deviceInfo?.widthMM+CONST.DELIMETER+clientActivity?.deviceInfo?.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket?.localAddress)
+                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+clientActivityData?.deviceInfo?.widthMM+CONST.DELIMETER+clientActivityData?.deviceInfo?.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket?.localAddress)
+                dos.flush()
+                clientActivityData?.onWait()
 
-//                var outputStream = socket.getOutputStream()
-//                var dos = DataOutputStream(outputStream)
-//
-//                dos.writeUTF(CONST.N_ON_CONNECT+CONST.DELIMETER+socket.localAddress)
-//                var inputStream = socket.getInputStream()
-//                var dis = DataInputStream(inputStream)
-//
-//                var receiveMessage = dis.readUTF()f
-                clientActivity?.onWait()
-
-
+            }
+            CONST.L_PLAYER_ON_CONNECT->{
+                Log.d("###", "Before Socket Connect")
+                playerActivity?.socket = Socket(playerActivityData?.hostAddress, CONST.NETWORK_PLAYER_PORT)
+                Log.d("###", "Socket Connect")
             }
         }
         return null
     }
 
 }
-/*
- 네트워크 시퀀스 -> 소켓이 열리면 클라에서 먼저 기기정보 전송을함
- 그리고 readinput 대기.
- 소켓이 열리면 서버는 readinput대기하다가 기기정보가 전송되면
- 기기정보 받아두고, 비디오를 선택함.(이 때 asynctask는 끝난 상태)
- 비디오 파일 전송 시작메세지를 보냄.(asynctask 다시 execute해서 보냄)(더불어 소켓 accept 대기 근데 datagram도 소켓이 필요하던가?)(필요없다면 보류)
- 그리고 readinput대기.(receive waiting 신호로 asyncTask execute해서 대기)
- 클라에서는 전송 시작메세지 받고 asynctask가 종료 야호~ 일단 한가닥 돌렸다
-
-
- 1.기기정보 전송
-
- */
-//        var socket = Socket(hostAddress, 8888)
-//        var outputStream = socket.getOutputStream()
-//        var dos = DataOutputStream(outputStream)
-//        dos.writeUTF("MESSAGE_RECEIVED")
-//        return null
-

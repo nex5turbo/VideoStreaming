@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.*
 import android.os.AsyncTask
@@ -20,7 +19,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_server.*
 import java.net.*
-import kotlin.experimental.and
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ServerActivity : AppCompatActivity(), ServerTaskListener{
@@ -34,7 +34,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     //위젯정보 끝
 
     val CONST = Consts()
-    var serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
+    var serverSocket : ServerSocket? = null
     var socket : Socket? = null
     lateinit var task :ServerNetworkTask
     var deviceList = arrayListOf<DeviceInfo>()
@@ -48,6 +48,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     lateinit var serverDeviceInfo: DeviceInfo
     var clientDeviceInfoList = ArrayList<DeviceInfo>()
     var resultPath : String? = null
+    var fileName = ""
     var connectedDevice = 1
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
 
@@ -69,18 +70,12 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     private fun buttonListener() {
         serverWifiDirectConnectButton.setOnClickListener {
-//            if (wifiManager.isWifiEnabled()) {
-//                wifiManager.setWifiEnabled(false)
-//                serverWifiDirectConnectButton.setText("Wifi-On")
-//            } else {
-//                wifiManager.setWifiEnabled(true)
-//                serverWifiDirectConnectButton.setText("Wifi-Off")
-//            }
-
-            callAsyncTask(CONST.N_ON_CONNECT)
-
+            callAsyncTask(CONST.L_ON_CONNECT)
         }
 
+        serverWifiDirectPlayVideoButton.setOnClickListener {
+            callAsyncTask(CONST.N_PLAY_VIDEO)
+        }
 
 
         serverWifiDirectRefreshButton.setOnClickListener {//현재 접속한 기기 목록을 띄우도록
@@ -127,12 +122,13 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 }
             })
         }
-        serverWifiDirectPlayVideoButton.setOnClickListener {
+        serverWifiDirectSendVideoButton.setOnClickListener {
             if(resultPath == null){
                 Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
             }
 
-            callAsyncTask(CONST.N_PLAY_VIDEO)
+            callAsyncTask(CONST.N_REQUEST_READY_FILE_TRANSFER)
+            playEnable()
 
         }
         serverWifiDirectFindVideoButton.setOnClickListener {
@@ -144,7 +140,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     override fun playVideo() {
         val i = Intent(this, ServerPlayerActivity::class.java)
-        i.putExtra("videoPath", resultPath)
+        i.putExtra("videoPath", resultPath + "/" + fileName)
         startActivity(i)
     }
 
@@ -163,6 +159,8 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         widgetDisconnectButton = serverWifiDirectDisconnectButton
         widgetRefreshButton = serverWifiDirectRefreshButton
         widgetTitle = serverWifiDirectTitle
+        serverWifiDirectPlayVideoButton.isEnabled = false
+        serverWifiDirectSendVideoButton.isEnabled = false
 
 
     }
@@ -252,14 +250,35 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 var uri = data?.data
                 resultPath = realPath.getRealPath(this, uri!!)
                 Log.e("###", resultPath)
+                splitPathName()
+                Log.e("###", resultPath)
+                Log.e("###", fileName)
                 Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
                 serverWifiDirectTitle.setText(resultPath)
+                sendEnable()
             }
         }
     }
 
+    fun splitPathName(){
+        var returnPath = ""
+        var tempString = ""
+        var token = StringTokenizer(resultPath, "/")
+        tempString = token.nextToken()
+        returnPath = "/" + tempString + "/"
+        while(true){
+            tempString = token.nextToken()
+            if(!token.hasMoreTokens()){
+                fileName = tempString
+                break
+            }
+            returnPath = returnPath + tempString + "/"
+        }
+        resultPath = returnPath.substring(0,returnPath.length-1)
+    }
+
     fun callAsyncTask(mode:String){
-        task = ServerNetworkTask(mode, this)
+        task = ServerNetworkTask(mode, this, null)
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
@@ -269,12 +288,23 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         widthMM: Float,
         heightMM: Float,
         deviceOrder: Int,
-        inetAddress: String
+        sock : Socket
     ) {
-        var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, inetAddress)
+        var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, sock)
         clientDeviceInfoList.add(di)
     }
 
+    override fun filetransferOver() {
+        serverWifiDirectConnectionStatus.setText("파일전송이 완료되었습니다.")
+    }
+
+    override fun sendEnable() {
+        serverWifiDirectSendVideoButton.isEnabled = true
+    }
+
+    override fun playEnable() {
+        serverWifiDirectPlayVideoButton.isEnabled = true
+    }
 
 
 }
