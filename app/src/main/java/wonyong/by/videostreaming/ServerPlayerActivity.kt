@@ -17,6 +17,8 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     var playerServerSocket : ServerSocket? = null
     var mediaController : MediaController? = null
     val CONST = Consts()
+    var timeRateArray = arrayListOf<Long>()
+    var nowPosition = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +34,27 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     private fun setVideo() {
-        mediaController = MediaController(this@ServerPlayerActivity)
-        serverVideoView.setMediaController(mediaController)
+//        mediaController = MediaController(this@ServerPlayerActivity)
+//        serverVideoView.setMediaController(mediaController)
         serverVideoView.setVideoPath(videoPath)
         serverVideoView.requestFocus()
-        serverVideoView.start()
-
+        controllerPlayButton.setOnClickListener {
+            callAsyncTask(CONST.N_PLAYER_PLAY)
+        }
+        controllerPauseButton.setOnClickListener {
+            callAsyncTask(CONST.N_PLAYER_PAUSE)
+        }
+        forwardButton.setOnClickListener {
+            nowPosition = serverVideoView.currentPosition+10000
+            callAsyncTask(CONST.N_PLAYER_FORWARD)
+        }
+        backwardButton.setOnClickListener {
+            nowPosition = serverVideoView.currentPosition-10000
+            callAsyncTask(CONST.N_PLAYER_BACKWARD)
+        }
     }
+
+
 
     fun callAsyncTask(mode:String){
         var task = ServerNetworkTask(mode, null, this)
@@ -46,10 +62,24 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     override fun playVideo() {
-
+        serverVideoView.start()
     }
 
     override fun pauseVideo() {
+        serverVideoView.pause()
+    }
 
+    override fun onWait() {
+
+    }
+
+    override fun forward(position : Int) {
+        serverVideoView.seekTo(nowPosition)
+        serverVideoView.start()
+    }
+
+    override fun backward(position : Int) {
+        serverVideoView.seekTo(nowPosition)
+        serverVideoView.start()
     }
 }

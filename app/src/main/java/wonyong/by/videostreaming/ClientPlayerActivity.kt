@@ -1,9 +1,11 @@
 package wonyong.by.videostreaming
 
+import android.content.Context
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.MediaController
 import kotlinx.android.synthetic.main.activity_client_player.*
 import java.net.InetAddress
@@ -17,6 +19,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     var socket : Socket? = null
     var CONST = Consts()
     var mediaController : MediaController? = null
+    var timeRate : Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,12 +47,8 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
 
     private fun setVideo() {
-        mediaController = MediaController(this@ClientPlayerActivity)
-        clientVideoView.setMediaController(mediaController)
         clientVideoView.setVideoPath(videoPath)
         clientVideoView.requestFocus()
-        clientVideoView.start()
-
     }
 
     fun callAsyncTask(mode:String){
@@ -57,10 +56,25 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
     override fun playVideo() {
-
+        clientVideoView.start()
     }
 
     override fun pauseVideo() {
-
+        clientVideoView.pause()
     }
+
+    override fun onWait() {
+        callAsyncTask(CONST.L_PLAYER_WAITING_RECEIVE)
+    }
+
+    override fun forward(position: Int) {
+        clientVideoView.seekTo(position)
+        clientVideoView.start()
+    }
+
+    override fun backward(position: Int) {
+        clientVideoView.seekTo(position)
+        clientVideoView.start()
+    }
+
 }
