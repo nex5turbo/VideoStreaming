@@ -51,7 +51,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     var localAddress = ""
     val CONST = Consts()
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
-    var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming"
+    var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming/KakaoTalk_Video_20190701_0841_47_472(김예인).mp4"
     var fileName = ""
 
 
@@ -78,7 +78,10 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         }
 
         clientWifiDirectTcpButton.setOnClickListener {
-//            callAsyncTask(CONST.L_WAITING_RECEIVE)
+            val i = Intent(this, ClientPlayerActivity::class.java)
+            i.putExtra("deviceInfo", deviceInfo)
+            i.putExtra("videoPath", storage)
+            startActivity(i)
         }
 
         clientWifiDirectRefreshButton.setOnClickListener {

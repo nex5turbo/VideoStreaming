@@ -93,15 +93,16 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                             dos.write(data, 0, len)
 
                         }
-                        dos.flush()
-                        dos.close()
-                        diSocket?.close()
-                        Log.d("###", "파일전송 완료")
-                        //serverActivityData?.filetransferOver()
-                        di.socket = serverActivityData?.serverSocket?.accept()
+
                     } else {
                         return null
                     }
+                    dos.flush()
+                    dos.close()
+                    diSocket?.close()
+                    Log.d("###", "파일전송 완료")
+                    serverActivityData?.filetransferOver()
+                    di.socket = serverActivityData?.serverSocket?.accept()
                 }
             }
 

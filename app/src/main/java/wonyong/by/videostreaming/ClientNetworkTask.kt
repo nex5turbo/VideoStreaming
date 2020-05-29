@@ -25,7 +25,7 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
 
         when(mode){
             CONST.L_WAITING_RECEIVE->{
-
+                Log.d("###", "onwait")
                 var inputStream = socket?.getInputStream()
 
                 var dis = DataInputStream(inputStream)
