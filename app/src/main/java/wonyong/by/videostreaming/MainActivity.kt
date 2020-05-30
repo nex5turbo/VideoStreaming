@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         checkDeviceInfoButton.setOnClickListener {
-            deviceInfoTextView.setText("가로길이 = "+deviceInfo.widthMM+"세로길이 = "+deviceInfo.heightMM)
+            deviceInfoTextView.setText("가로길이 = "+deviceInfo.widthPixel+"세로길이 = "+deviceInfo.heightPixel)
         }
 
         videoButton.setOnClickListener {

@@ -51,6 +51,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     var fileName = ""
     var connectedDevice = 1
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
+    var totalWidthPixel = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -168,29 +169,6 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     var peerListListener : WifiP2pManager.PeerListListener = object : WifiP2pManager.PeerListListener{
         override fun onPeersAvailable(peerList: WifiP2pDeviceList){
 
-            if(!peerList.deviceList.equals(peers)){
-
-                peers.clear()
-                peers.addAll(peerList.deviceList)
-
-                deviceNameArray = arrayOfNulls<String>(peerList.deviceList.size)
-                deviceArray = arrayOfNulls<WifiP2pDevice>(peerList.deviceList.size)
-                var index = 0
-                for(device : WifiP2pDevice in peerList.deviceList){
-                    deviceNameArray[index] = device.deviceName
-                    deviceArray[index] = device
-                    index++
-
-                }
-
-                var nameAdapter : ArrayAdapter<String> =
-                    ArrayAdapter<String>(applicationContext, android.R.layout.simple_list_item_1, deviceNameArray)!!
-                serverWifiDirectListView.setAdapter(nameAdapter)
-            }
-            if(peers.size == 0){
-
-                return
-            }
         }
     }
 
@@ -199,6 +177,16 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
             val groupOwnerAddress : InetAddress = wifiP2pInfo.groupOwnerAddress
             if(wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner){
                 widgetStatusTextView.setText("server")
+                var group = WifiP2pGroup()
+                var clientNameArray = arrayOfNulls<String>(group.clientList.size)
+                var index = 0
+                for(clientGroup:WifiP2pDevice in group.clientList) {
+                    clientNameArray[index] = clientGroup.deviceName
+                    index++
+                }
+                var nameAdapter: ArrayAdapter<String> =
+                    ArrayAdapter<String>(applicationContext, android.R.layout.simple_list_item_1, clientNameArray)!!
+                serverWifiDirectListView.setAdapter(nameAdapter)
             }
             else if(wifiP2pInfo.groupFormed){
                 widgetStatusTextView.setText("Client")
@@ -306,5 +294,11 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         serverWifiDirectPlayVideoButton.isEnabled = true
     }
 
+    override fun calcPixel() {
+        for(di:DeviceInfo in clientDeviceInfoList){
+            totalWidthPixel += di.widthPixel
+        }
+        totalWidthPixel += serverDeviceInfo.widthPixel
+    }
 
 }

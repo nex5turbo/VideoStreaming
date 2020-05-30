@@ -33,10 +33,10 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     var receiveMessage = dis.readUTF()
                     var st: StringTokenizer
                     st = StringTokenizer(receiveMessage, CONST.DELIMETER)
-                    var heightPixel = st.nextToken()
-                    Log.d("hp", heightPixel)
                     var widthPixel = st.nextToken()
                     Log.d("hp", widthPixel)
+                    var heightPixel = st.nextToken()
+                    Log.d("hp", heightPixel)
                     var widthMM = st.nextToken()
                     Log.d("hp", widthMM)
                     var heightMM = st.nextToken()
@@ -56,7 +56,14 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                         socket!!
                     )
                 }
-
+                serverActivityData?.calcPixel()
+                var i = 1
+                for(di:DeviceInfo in serverActivityData!!.clientDeviceInfoList){
+                    var infoSocket = di.socket
+                    var dos = DataOutputStream(infoSocket?.getOutputStream())
+                    dos.writeUTF(serverActivityData?.totalWidthPixel.toString()+CONST.DELIMETER+i.toString())
+                    i++
+                }
             }
 
             CONST.N_REQUEST_READY_FILE_TRANSFER->{
