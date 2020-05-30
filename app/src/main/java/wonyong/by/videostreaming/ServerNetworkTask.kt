@@ -150,7 +150,6 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     var dos = DataOutputStream(sock.getOutputStream())
                     dos.writeUTF(CONST.N_PLAYER_PLAY)
                 }
-                sleep(playerActivityData!!.timeRateArray[0] * 40)
                 playerActivityData?.playVideo()
             }
             CONST.N_PLAYER_PAUSE->{
@@ -158,7 +157,6 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     var dos = DataOutputStream(sock.getOutputStream())
                     dos.writeUTF(CONST.N_PLAYER_PAUSE)
                 }
-                sleep(playerActivityData!!.timeRateArray[0] * 20)
                 playerActivityData?.pauseVideo()
             }
             CONST.N_PLAYER_BACKWARD->{
