@@ -132,6 +132,10 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                         var position = receiveMessage.toInt()
                         playerActivityData?.backward(position)
                     }
+                    CONST.N_PLAYER_EXIT->{
+                        playerActivityData?.exitPlayer()
+                        return null
+                    }
                 }
                 playerActivityData?.onWait()
             }

@@ -4,46 +4,63 @@
                                                    xmlns:tools="http://schemas.android.com/tools"
                                                    android:layout_width="match_parent"
                                                    android:layout_height="match_parent"
-                                                   android:background="#00090808" tools:context=".ServerPlayerActivity">
+                                                   android:background="@android:color/background_dark"
+                                                   tools:context=".ServerPlayerActivity">
 
     <VideoView
             android:id="@+id/serverVideoView"
             android:layout_width="0dp"
-            android:layout_height="524dp"
-            android:layout_marginBottom="53dp" app:layout_constraintBottom_toTopOf="@+id/controllerPlayButton"
+            android:layout_height="0dp"
+            android:layout_marginTop="2dp" android:layout_marginBottom="46dp"
+            app:layout_constraintBottom_toTopOf="@+id/forwardButton"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-    />
+            app:layout_constraintTop_toTopOf="parent"/>
+
+
     <Button
             android:id="@+id/controllerPlayButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="play" app:layout_constraintBottom_toTopOf="@+id/controllerPauseButton"
+            android:text="play"
+            app:layout_constraintEnd_toStartOf="@+id/controllerPauseButton"
             app:layout_constraintStart_toEndOf="@+id/backwardButton"
+            app:layout_constraintTop_toTopOf="@+id/controllerPauseButton"
     />
     <Button
             android:id="@+id/controllerPauseButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="1dp"
-            android:layout_marginBottom="56dp"
+            android:layout_marginBottom="111dp"
             android:text="pause" app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/forwardButton"/>
+            app:layout_constraintEnd_toStartOf="@+id/forwardButton"
+            app:layout_constraintStart_toEndOf="@+id/controllerPlayButton"
+            app:layout_constraintTop_toBottomOf="@+id/forwardButton"
+    />
     <Button
             android:id="@+id/backwardButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="7dp"
             android:text="back"
             app:layout_constraintBaseline_toBaselineOf="@+id/controllerPlayButton"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/controllerPlayButton"
+            app:layout_constraintHorizontal_chainStyle="packed" app:layout_constraintStart_toStartOf="parent"
     />
     <Button
             android:id="@+id/forwardButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_marginEnd="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
             android:text="for"
-            app:layout_constraintBaseline_toBaselineOf="@+id/controllerPauseButton"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seekBar"/>
+    <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="42dp" android:layout_height="0dp"
+            android:layout_marginTop="183dp"
+            android:layout_marginEnd="16dp" android:layout_marginBottom="262dp"
+            android:rotation="270" app:layout_constraintBottom_toTopOf="@+id/forwardButton"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"
     />
 </androidx.constraintlayout.widget.ConstraintLayout>

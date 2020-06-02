@@ -122,7 +122,9 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                 }
                 serverActivityData?.playVideo()
                 serverActivityData?.serverSocket?.close()
-
+                serverActivityData?.serverSocket = null
+                serverActivityData?.socket = null
+                serverActivityData?.clientDeviceInfoList?.clear()
             }
             CONST.L_PLAYER_ON_CONNECT->{
                 playerActivityData?.playerServerSocket = ServerSocket(CONST.NETWORK_PLAYER_PORT)
@@ -174,6 +176,14 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     dos.writeUTF(playerActivityData?.nowPosition.toString())
                 }
                 playerActivityData?.forward(playerActivityData?.nowPosition)
+            }
+            CONST.N_PLAYER_EXIT->{
+                for(sock : Socket in playerSocketList!!){
+                    var dos = DataOutputStream(sock.getOutputStream())
+                    dos.writeUTF(CONST.N_PLAYER_EXIT)
+                    sock.close()
+                }
+                playerActivityData?.playerServerSocket?.close()
             }
         }
         return null

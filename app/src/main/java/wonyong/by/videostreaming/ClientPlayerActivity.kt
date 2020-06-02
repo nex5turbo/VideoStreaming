@@ -2,14 +2,17 @@ package wonyong.by.videostreaming
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
 import android.opengl.Visibility
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.MediaController
 import android.widget.VideoView
@@ -33,8 +36,10 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        getWindow().setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_client_player)
-
 
         buttonListener()
         init()
@@ -55,6 +60,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
         retriever = MediaMetadataRetriever()
         retriever.setDataSource(videoPath)
+        socketButton.gravity = Gravity.CENTER
         setVideo()
     }
 
@@ -84,13 +90,15 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         flc = findViewById(R.id.flc)
         vv = findViewById(R.id.clientVideoView)
 
-        var mc = MediaController(this)
-        vv.setMediaController(mc)
+        var PreparedListener = MediaPlayer.OnPreparedListener {
+            it.setVolume(0f, 0f)
+        }
+        vv.setOnPreparedListener(PreparedListener)
         vv.setVideoPath(videoPath)
-        vv.layoutParams.width = W.toInt()
+        vv.layoutParams.width = 3960
         vv.layoutParams.height = H.toInt()
         vv.setX(aX.toFloat())
-        lp = FrameLayout.LayoutParams(7494, H.toInt())
+        lp = FrameLayout.LayoutParams(3960, vv.layoutParams.height)
         lp.leftMargin = 0
         lp.topMargin = 0
         lp.rightMargin = 0
@@ -99,6 +107,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         vv.layoutParams = lp
         vv.requestLayout()
         flc.requestLayout()
+
     }
 
     fun callAsyncTask(mode:String){
@@ -125,6 +134,10 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     override fun backward(position: Int) {
         clientVideoView.seekTo(position)
         clientVideoView.start()
+    }
+
+    fun exitPlayer(){
+        finish()
     }
 
 }
