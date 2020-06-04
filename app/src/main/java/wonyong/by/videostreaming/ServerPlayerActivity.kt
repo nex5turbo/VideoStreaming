@@ -1,10 +1,16 @@
 package wonyong.by.videostreaming
 
+import android.content.Context
+import android.media.AudioManager
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
 import android.widget.MediaController
+import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_server_player.*
 import kotlinx.android.synthetic.main.activity_video_test.*
 import java.net.ServerSocket
@@ -22,6 +28,9 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        getWindow().setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_server_player)
 
         videoPath = intent.getStringExtra("videoPath")
@@ -31,6 +40,37 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
 
     private fun init() {
         callAsyncTask(CONST.L_PLAYER_ON_CONNECT)
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val nMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val nCurrentVolumn = audioManager
+            .getStreamVolume(AudioManager.STREAM_MUSIC)
+
+        seekBar.setMax(nMax)
+        seekBar.setProgress(nCurrentVolumn)
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                // TODO Auto-generated method stub
+
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+                // TODO Auto-generated method stub
+
+            }
+
+            override fun onProgressChanged(
+                seekBar: SeekBar, progress: Int,
+                fromUser: Boolean
+            ) {
+                // TODO Auto-generated method stub
+                audioManager.setStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    progress, 0
+                )
+            }
+        })
     }
 
     private fun setVideo() {
@@ -52,6 +92,24 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
             nowPosition = serverVideoView.currentPosition-10000
             callAsyncTask(CONST.N_PLAYER_BACKWARD)
         }
+        serverVideoView.setOnTouchListener(object : View.OnTouchListener{
+            override fun onTouch(p0: View?, p1: MotionEvent?): Boolean {
+                if(seekBar.visibility == View.VISIBLE){
+                    controllerPlayButton.visibility = View.GONE
+                    controllerPauseButton.visibility = View.GONE
+                    forwardButton.visibility = View.GONE
+                    backwardButton.visibility = View.GONE
+                    seekBar.visibility = View.GONE
+                }else{
+                    controllerPlayButton.visibility = View.VISIBLE
+                    controllerPauseButton.visibility = View.VISIBLE
+                    forwardButton.visibility = View.VISIBLE
+                    backwardButton.visibility = View.VISIBLE
+                    seekBar.visibility = View.VISIBLE
+                }
+                return false
+            }
+        })
     }
 
 
@@ -81,5 +139,12 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     override fun backward(position : Int) {
         serverVideoView.seekTo(nowPosition)
         serverVideoView.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        callAsyncTask(CONST.N_PLAYER_EXIT)
+        serverVideoView.pause()
+        finish()
     }
 }
