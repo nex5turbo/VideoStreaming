@@ -9,4 +9,5 @@ interface ServerTaskListener {
     fun filetransferOver()
     fun playEnable()
     fun sendEnable()
+    fun calcPixel()
 }

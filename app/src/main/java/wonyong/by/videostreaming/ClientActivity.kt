@@ -48,10 +48,11 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var deviceNameArray:Array<String?>
     lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var deviceInfo: DeviceInfo
+    var totalWidthPixel = 0
     var localAddress = ""
     val CONST = Consts()
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
-    var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming/KakaoTalk_Video_20190701_0841_47_472(김예인).mp4"
+    var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming"
     var fileName = ""
 
 
@@ -78,10 +79,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         }
 
         clientWifiDirectTcpButton.setOnClickListener {
-            val i = Intent(this, ClientPlayerActivity::class.java)
-            i.putExtra("deviceInfo", deviceInfo)
-            i.putExtra("videoPath", storage)
-            startActivity(i)
+
         }
 
         clientWifiDirectRefreshButton.setOnClickListener {
@@ -174,17 +172,14 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         widgetDisconnectButton = clientWifiDirectDisconnectButton
         widgetRefreshButton = clientWifiDirectRefreshButton
         widgetTitle = clientWifiDirectTitle
-        dircheck()
+        dirCheck()
     }
 
-    fun dircheck(){
+    fun dirCheck(){
         var dir = File(storage)
         Log.d("makedir", "before")
         if(!dir.exists()) {
-
-            Log.d("makedir", dir.mkdirs().toString())
-        }else{
-            Log.d("makedir", "exist")
+            dir.mkdirs()
         }
     }
 
@@ -285,7 +280,8 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         val i = Intent(this, ClientPlayerActivity::class.java)
         i.putExtra("videoPath", storage + "/" + fileName)
         i.putExtra("hostAddress", hostAddress)
-//        i.putExtra("deviceInfo", deviceInfo)
+        deviceInfo.socket = null
+        i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }
 

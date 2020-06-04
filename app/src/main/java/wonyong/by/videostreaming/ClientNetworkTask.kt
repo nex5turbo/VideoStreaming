@@ -1,13 +1,11 @@
 package wonyong.by.videostreaming
 
 import android.os.AsyncTask
-import android.os.Environment
 import android.util.Log
 import java.io.*
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
-import java.net.InetAddress
 import java.net.Socket
+import java.util.*
 
 class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val playerActivity: ClientPlayerActivity?) : AsyncTask<Void, Void, Void>() {
 
@@ -27,11 +25,9 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
             CONST.L_WAITING_RECEIVE->{
                 Log.d("###", "onwait")
                 var inputStream = socket?.getInputStream()
-
                 var dis = DataInputStream(inputStream)
                 var receiveMessage = dis.readUTF()
 
-                Log.d("##receive", receiveMessage)
                 if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
                     clientActivityData?.socket?.close()
                     clientActivityData?.playVideo()
@@ -43,7 +39,6 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                     var dos = DataOutputStream(socket?.getOutputStream())
                     var file = File(clientActivityData?.storage + "/" + receiveMessage)
                     if(file.exists()){
-                        Log.d("###", file.exists().toString())
                         dos.writeUTF(CONST.N_FILE_EXIST)
                         clientActivityData?.filetransferOver()
                         clientActivityData?.onWait()
@@ -51,10 +46,8 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                     }
                     dos.writeUTF(CONST.N_READY_FILE_TRANSFER)
 
-
-                    var fos = FileOutputStream(file)
-                    var bos = BufferedOutputStream(fos)
-
+                    var FILE_OUTPUT_STREAM = FileOutputStream(file)
+                    var BUFFERED_OUTPUT_STREAM = BufferedOutputStream(FILE_OUTPUT_STREAM)
                     var len : Int = 0
                     var lenSum = 0
                     var size = 1024
@@ -67,12 +60,8 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                         if(len == -1){
                             break
                         }
-
                         lenSum = lenSum + len
-                        Log.d("###", "len#" + len.toString())
-                        Log.d("###", "lenSum" + lenSum.toString())
-
-                        bos.write(data, 0, len)
+                        BUFFERED_OUTPUT_STREAM.write(data, 0, len)
                     }
 
                     Log.d("###", "File transfer over")
@@ -89,14 +78,21 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                 socket = Socket(clientActivityData?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
                 clientActivityData?.socket = socket
                 clientActivityData?.localAddress ="for test"
-
-                Log.d("###", clientActivityData?.localAddress)
-                Log.d("###", socket?.inetAddress.toString())
-                Log.d("###", socket?.localAddress.toString())
                 clientActivityData?.deviceInfo?.socket = socket
 
                 var dos = DataOutputStream(socket?.getOutputStream())
-                dos.writeUTF("0"+CONST.DELIMETER+"0"+CONST.DELIMETER+clientActivityData?.deviceInfo?.widthMM+CONST.DELIMETER+clientActivityData?.deviceInfo?.heightMM+CONST.DELIMETER+"0"+CONST.DELIMETER+socket?.localAddress)
+                dos.writeUTF(clientActivityData?.deviceInfo?.widthPixel.toString()+CONST.DELIMETER+
+                                    clientActivityData?.deviceInfo?.heightPixel.toString()+CONST.DELIMETER+
+                                    clientActivityData?.deviceInfo?.widthMM.toString()+CONST.DELIMETER+
+                                    clientActivityData?.deviceInfo?.heightMM.toString()+CONST.DELIMETER+
+                                    "0"+CONST.DELIMETER+
+                                    socket?.localAddress)
+                var dis = DataInputStream(socket?.getInputStream())
+                var receiveMessage = dis.readUTF()
+                Log.d("###", receiveMessage)
+                var st = StringTokenizer(receiveMessage, CONST.DELIMETER)
+                clientActivityData?.totalWidthPixel = st.nextToken().toInt()
+                clientActivityData?.deviceInfo?.deviceOrder = st.nextToken().toInt()
                 dos.flush()
                 clientActivityData?.onWait()
 
