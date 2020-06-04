@@ -13,6 +13,7 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
     var dataRef = WeakReference(activity)
     var clientActivityData = dataRef.get()
     var socket = clientActivityData?.socket
+    var dataSocket = clientActivityData?.dataSocket
 
     var playerDataRef = WeakReference(playerActivity)
     var playerActivityData = playerDataRef.get()
@@ -23,13 +24,11 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
 
         when(mode){
             CONST.L_WAITING_RECEIVE->{
-
                 var inputStream = socket?.getInputStream()
                 var dis = DataInputStream(inputStream)
                 var receiveMessage = dis.readUTF()
-
+                Log.d("###", receiveMessage)
                 if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
-                    clientActivityData?.socket?.close()
                     clientActivityData?.playVideo()
                     return null
                 }else if(receiveMessage.equals(CONST.N_REQUEST_READY_FILE_TRANSFER)){
@@ -69,6 +68,33 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                     clientActivityData?.filetransferOver()
                     clientActivityData?.socket?.close()
                     clientActivityData?.socket = Socket(clientActivityData?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
+                }else if(receiveMessage.equals(CONST.N_FILE_STREAMING_START)){
+                    receiveMessage = dis.readUTF()
+                    clientActivityData?.fileName = receiveMessage
+                    clientActivityData?.onWait()
+                    Log.d("###fileName", clientActivityData?.fileName)
+                    var fileDis = DataInputStream(dataSocket?.getInputStream())
+                    var file = File(clientActivityData?.storage + "/" + receiveMessage)
+                    var FILE_OUTPUT_STREAM = FileOutputStream(file)
+                    var BUFFERED_OUTPUT_STREAM = BufferedOutputStream(FILE_OUTPUT_STREAM)
+                    var len : Int = 0
+                    var lenSum = 0
+                    var size = 4096
+                    var data = ByteArray(size)
+                    while(len > -1){
+                        if(len == -1){
+                            break
+                        }
+                        len = fileDis.read(data)
+                        if(len == -1){
+                            break
+                        }
+                        lenSum = lenSum + len
+                        BUFFERED_OUTPUT_STREAM.write(data, 0, len)
+                    }
+                    Log.d("###", "File transfer over")
+
+                    return null
                 }
                 Log.d("###", "before on wait")
                 clientActivityData?.onWait()
@@ -76,7 +102,11 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
             CONST.L_ON_CONNECT->{
 
                 socket = Socket(clientActivityData?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
+                dataSocket = Socket(clientActivityData?.hostAddress, 8585)
+                clientActivityData?.dataSocket = dataSocket
+                Log.d("###", "dataSocket Connect")
                 clientActivityData?.socket = socket
+                Log.d("###", "Socket Connect")
                 clientActivityData?.localAddress ="for test"
                 clientActivityData?.deviceInfo?.socket = socket
 
@@ -95,11 +125,13 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                 clientActivityData?.deviceInfo?.deviceOrder = st.nextToken().toInt()
                 dos.flush()
                 clientActivityData?.onWait()
+                return null
 
             }
             CONST.L_PLAYER_ON_CONNECT->{
                 Log.d("###", "Before Socket Connect")
                 playerActivityData?.socket = Socket(playerActivityData?.hostAddress, CONST.NETWORK_PLAYER_PORT)
+                playerActivityData?.bufferSocket = Socket(playerActivityData?.hostAddress, 9090)
                 var dis = DataInputStream(playerActivityData?.socket?.getInputStream())
                 var receiveMessage = dis.readUTF()
 
@@ -111,10 +143,20 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
 
                 playerActivityData?.onWait()
                 Log.d("###", "Socket Connect")
+                return null
+
             }
-            CONST.L_PLAYER_WAITING_RECEIVE->{
+            CONST.N_PLAYER_BUFFER->{
+                var dos = DataOutputStream(playerActivityData?.bufferSocket?.getOutputStream())
+                dos.writeUTF(CONST.N_PLAYER_BUFFER)
+                return null
+            }
+            CONST.L_PLAYER_CLIENT_WAITING_RECEIVE->{
+                Log.d("###", "onWait")
                 var dis = DataInputStream(playerActivityData?.socket?.getInputStream())
+                Log.d("###", "ready2Receive")
                 var receiveMessage = dis.readUTF()
+                Log.d("###", receiveMessage)
                 when(receiveMessage){
                     CONST.N_PLAYER_PLAY->{
                         playerActivityData?.playVideo()

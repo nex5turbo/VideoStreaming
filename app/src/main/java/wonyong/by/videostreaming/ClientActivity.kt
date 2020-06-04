@@ -37,7 +37,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var widgetTitle : TextView
     //위젯정보 끝
 
+    var DN = ""
     var socket : Socket? = null
+    var dataSocket : Socket? = null
     lateinit var hostAddress : InetAddress
     lateinit var task : ClientNetworkTask
     lateinit var wifiManager:WifiManager
@@ -69,6 +71,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
 
     private fun getInfo() {
         deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+        DN = intent.getStringExtra("DS")
     }
 
 
@@ -281,6 +284,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         i.putExtra("videoPath", storage + "/" + fileName)
         i.putExtra("hostAddress", hostAddress)
         deviceInfo.socket = null
+        deviceInfo.dataSocket = null
         i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }

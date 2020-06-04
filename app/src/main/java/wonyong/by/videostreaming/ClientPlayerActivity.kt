@@ -1,22 +1,20 @@
 package wonyong.by.videostreaming
 
-import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
-import android.opengl.Visibility
+import android.net.Uri
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
 import android.view.Gravity
-import android.view.View
 import android.view.View.GONE
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.MediaController
 import android.widget.VideoView
 import kotlinx.android.synthetic.main.activity_client_player.*
+import java.io.File
 import java.net.InetAddress
 import java.net.Socket
 
@@ -26,6 +24,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     var hostAddress : InetAddress? = null
     lateinit var deviceInfo:DeviceInfo
     var socket : Socket? = null
+    var bufferSocket : Socket? = null
     var CONST = Consts()
     var mediaController : MediaController? = null
     var timeRate : Long = 0
@@ -71,14 +70,15 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         var H = deviceInfo?.heightPixel
         var displayMetrics = getApplicationContext().getResources().getDisplayMetrics()
 
-        var videoHeight = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
-        var videoWidth = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
+//
+//        var videoHeight = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
+//        var videoWidth = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
 
 //        W = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, W, displayMetrics)
 //        H = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, H, displayMetrics)
-
-        Log.v("ClientPlayerActivity", "afterAD : W = "+W+" / H = "+H)
-        Log.d("###", videoHeight.toString()+videoWidth.toString())
+//
+//        Log.v("ClientPlayerActivity", "afterAD : W = "+W+" / H = "+H)
+//        Log.d("###", videoHeight.toString()+videoWidth.toString())
 
 
         //픽셀단위로 옮기는 변수
@@ -94,7 +94,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
             it.setVolume(0f, 0f)
         }
         vv.setOnPreparedListener(PreparedListener)
-        vv.setVideoPath(videoPath)
+        vv.setVideoURI(Uri.parse(videoPath))
         vv.layoutParams.width = 3960
         vv.layoutParams.height = H.toInt()
         vv.setX(aX.toFloat())
@@ -106,8 +106,15 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         Log.v("ClientPlayerActivity", "afterAD3 : "+aX)
         vv.layoutParams = lp
         vv.requestLayout()
+        vv.setOnErrorListener(object : MediaPlayer.OnErrorListener{
+            override fun onError(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
+                callAsyncTask(CONST.N_PLAYER_BUFFER)
+                vv.setVideoURI(Uri.parse(videoPath))
+                vv.start()
+                return true
+            }
+        })
         flc.requestLayout()
-
     }
 
     fun callAsyncTask(mode:String){
@@ -123,7 +130,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     override fun onWait() {
-        callAsyncTask(CONST.L_PLAYER_WAITING_RECEIVE)
+        callAsyncTask(CONST.L_PLAYER_CLIENT_WAITING_RECEIVE)
     }
 
     override fun forward(position: Int) {
@@ -137,7 +144,17 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     fun exitPlayer(){
+        var file = File(videoPath)
+        if(file.exists())
+            file.delete()
         finish()
     }
 
+    override fun serverOnWait1() {
+
+    }
+
+    override fun serverOnWait2() {
+
+    }
 }

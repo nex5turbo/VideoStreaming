@@ -11,7 +11,8 @@ data class DeviceInfo(var heightPixel : Int,
                       var widthMM : Float,
                       var heightMM : Float,
                       var deviceOrder : Int,
-                      var socket : Socket?) : Serializable {
+                      var socket : Socket?,
+                      var dataSocket : Socket?) : Serializable {
 
     fun getVideoSize(serverDevice : DeviceInfo, clientDevice1 : DeviceInfo, clientDevice2 : DeviceInfo){
 

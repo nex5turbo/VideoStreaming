@@ -16,19 +16,23 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
         var dataRef= WeakReference(activity)
         var serverActivityData = dataRef.get()
         var socket = serverActivityData?.socket
+        var dataSocket = serverActivityData?.dataSocket
 
         var playerDataRef = WeakReference(playerActivity)
         var playerActivityData = playerDataRef.get()
         var playerSocketList = playerActivityData?.socketList
-
+        Log.d("###", "syncOn"+mode)
         when(mode){
             CONST.L_ON_CONNECT->{
                 Log.d("###", "inner")
                 serverActivityData?.serverSocket = ServerSocket(CONST.NETWORK_MESSAGE_PORT)
+                Log.d("###", "Socket Connect")
+                serverActivityData?.dataServerSocket = ServerSocket(8585)
+                Log.d("###", "dataSocket Connect")
                 serverActivityData?.serverSocket?.reuseAddress = true
                 for(i in 0..1) {
+                    dataSocket = serverActivityData?.dataServerSocket?.accept()
                     socket = serverActivityData?.serverSocket?.accept()
-                    serverActivityData?.socket = socket
                     var dis = DataInputStream(socket?.getInputStream())
                     var receiveMessage = dis.readUTF()
                     var st: StringTokenizer
@@ -53,7 +57,8 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                         widthMM.toFloat(),
                         heightMM.toFloat(),
                         deviceOrder.toInt(),
-                        socket!!
+                        socket!!,
+                        dataSocket!!
                     )
                 }
                 serverActivityData?.calcPixel()
@@ -64,6 +69,37 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     dos.writeUTF(serverActivityData?.totalWidthPixel.toString()+CONST.DELIMETER+i.toString())
                     i++
                 }
+            }
+            CONST.N_FILE_STREAMING_START->{
+                Log.d("###order", serverActivityData?.streamingOrder.toString())
+                var di = serverActivityData!!.clientDeviceInfoList[serverActivityData?.streamingOrder]
+                var diSocket = di.socket
+                var dos = DataOutputStream(diSocket?.getOutputStream())
+                var diFileSocket = di.dataSocket
+                var fileDos = DataOutputStream(diFileSocket?.getOutputStream())
+                dos.writeUTF(CONST.N_FILE_STREAMING_START)
+                dos.writeUTF(serverActivityData?.fileName)
+                var file = File(serverActivityData?.resultPath + "/" + serverActivityData?.fileName)
+                Log.d("FileSize", file.length().toString())
+                var fis = FileInputStream(file)
+                var bis = BufferedInputStream(fis)
+
+                var len: Int
+                var lenSum = 0
+                var size = 1024
+                var data = ByteArray(size)
+                while (true) {
+                    len = bis.read(data)
+                    lenSum = lenSum + len
+                    if (len == -1) {
+                        break
+                    }
+                    fileDos.write(data, 0, len)
+
+                }
+                diFileSocket?.close()
+                Log.d("###", "파일전송 완료")
+                //serverActivityData?.filetransferOver()
             }
 
             CONST.N_REQUEST_READY_FILE_TRANSFER->{
@@ -88,7 +124,7 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
 
                         var len: Int
                         var lenSum = 0
-                        var size = 1024
+                        var size = 4096
                         var data = ByteArray(size)
                         while (true) {
                             len = bis.read(data)
@@ -121,19 +157,19 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     dos.writeUTF(CONST.N_PLAY_VIDEO)
                 }
                 serverActivityData?.playVideo()
-                serverActivityData?.serverSocket?.close()
-                serverActivityData?.serverSocket = null
-                serverActivityData?.socket = null
-                serverActivityData?.clientDeviceInfoList?.clear()
             }
             CONST.L_PLAYER_ON_CONNECT->{
                 playerActivityData?.playerServerSocket = ServerSocket(CONST.NETWORK_PLAYER_PORT)
+                playerActivityData?.playerBufferSocket = ServerSocket(9090)
                 playerActivityData?.playerServerSocket?.reuseAddress = true
                 //여기서 전송시간 계산해서 받아주기
                 for(i in 0..1){
                     var tempSocket : Socket? = null
+                    var tempBufferSocket : Socket? = null
                     tempSocket = playerActivityData?.playerServerSocket?.accept()
+                    tempBufferSocket = playerActivityData?.playerBufferSocket?.accept()
                     playerActivityData?.socketList?.add(tempSocket!!)
+                    playerActivityData?.bufferSocketList?.add(tempBufferSocket!!)
                     var beforeTime = System.currentTimeMillis()
                     var dos = DataOutputStream(tempSocket?.getOutputStream())
                     dos.writeUTF("PLAYER_ON_CONNECT")
@@ -144,13 +180,33 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                     var timeRate = afterTime - beforeTime
                     dos.writeUTF(timeRate.toString())
                     Log.d("###", timeRate.toString())
-                    playerActivityData?.timeRateArray?.add(timeRate)
                 }
+                playerActivityData?.serverOnWait1()
+                playerActivityData?.serverOnWait2()
             }
+//            CONST.L_PLAYER_SERVER_WAITING_RECEIVE->{
+//                Log.d("###", "waiting1")
+//                var bufferSocket = playerActivityData!!.bufferSocketList[0]
+//                var dis = DataInputStream(bufferSocket.getInputStream())
+//                var receiveMessage = dis.readUTF()
+//                Log.d("###", receiveMessage)
+//                playerActivityData?.serverOnWait1()
+//            }
+//            CONST.L_PLAYER_SERVER_WAITING_RECEIVE_2->{
+//                Log.d("###", "waiting2")
+//                var bufferSocket = playerActivityData!!.bufferSocketList[1]
+//                var dis = DataInputStream(bufferSocket.getInputStream())
+//                var receiveMessage = dis.readUTF()
+//                Log.d("###", receiveMessage)
+//                playerActivityData?.serverOnWait2()
+//            }
             CONST.N_PLAYER_PLAY->{
+                Log.d("###", "playIn")
                 for(sock : Socket in playerSocketList!!){
+                    Log.d("###", "before")
                     var dos = DataOutputStream(sock.getOutputStream())
                     dos.writeUTF(CONST.N_PLAYER_PLAY)
+                    Log.d("###", "after")
                 }
                 playerActivityData?.playVideo()
             }

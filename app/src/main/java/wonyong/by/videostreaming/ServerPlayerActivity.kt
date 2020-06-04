@@ -13,6 +13,7 @@ import android.widget.MediaController
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_server_player.*
 import kotlinx.android.synthetic.main.activity_video_test.*
+import java.lang.Thread.sleep
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -20,7 +21,9 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
 
     var videoPath: String? = null
     var socketList = arrayListOf<Socket>()
+    var bufferSocketList = arrayListOf<Socket>()
     var playerServerSocket : ServerSocket? = null
+    var playerBufferSocket : ServerSocket? = null
     var mediaController : MediaController? = null
     val CONST = Consts()
     var timeRateArray = arrayListOf<Long>()
@@ -79,6 +82,7 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
         serverVideoView.setVideoPath(videoPath)
         serverVideoView.requestFocus()
         controllerPlayButton.setOnClickListener {
+            Log.d("###", "clicked")
             callAsyncTask(CONST.N_PLAYER_PLAY)
         }
         controllerPauseButton.setOnClickListener {
@@ -115,12 +119,17 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
 
 
     fun callAsyncTask(mode:String){
-        var task = ServerNetworkTask(mode, null, this)
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        Log.d("###", "before")
+        ServerNetworkTask(mode, null, this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        Log.d("###", "after")
     }
 
     override fun playVideo() {
+        var cur = System.currentTimeMillis()
         serverVideoView.start()
+        var after = System.currentTimeMillis()
+        var delay = after - cur
+        Log.d("###", delay.toString())
     }
 
     override fun pauseVideo() {
@@ -146,5 +155,13 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
         callAsyncTask(CONST.N_PLAYER_EXIT)
         serverVideoView.pause()
         finish()
+    }
+
+    override fun serverOnWait1() {
+        ServerBufferThread(CONST.L_PLAYER_SERVER_WAITING_RECEIVE, this).start()
+    }
+
+    override fun serverOnWait2() {
+        ServerBufferThread(CONST.L_PLAYER_SERVER_WAITING_RECEIVE_2, this).start()
     }
 }
