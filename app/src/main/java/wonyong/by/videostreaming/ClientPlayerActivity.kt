@@ -110,7 +110,6 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
             override fun onError(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
                 callAsyncTask(CONST.N_PLAYER_BUFFER)
                 vv.setVideoURI(Uri.parse(videoPath))
-                vv.start()
                 return true
             }
         })
@@ -156,5 +155,10 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
     override fun serverOnWait2() {
 
+    }
+
+    override fun setAfterBuffered(position: Int) {
+        clientVideoView.seekTo(position)
+        ClientBufferThread(CONST.N_PLAYER_READY_BUFFER, this).start()
     }
 }

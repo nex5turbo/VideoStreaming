@@ -149,6 +149,7 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
             CONST.N_PLAYER_BUFFER->{
                 var dos = DataOutputStream(playerActivityData?.bufferSocket?.getOutputStream())
                 dos.writeUTF(CONST.N_PLAYER_BUFFER)
+                dos.flush()
                 return null
             }
             CONST.L_PLAYER_CLIENT_WAITING_RECEIVE->{
@@ -158,6 +159,13 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                 var receiveMessage = dis.readUTF()
                 Log.d("###", receiveMessage)
                 when(receiveMessage){
+                    CONST.N_PLAYER_BUFFER->{
+                        playerActivityData?.pauseVideo()
+                        receiveMessage = dis.readUTF()
+                        Log.d("###", receiveMessage)
+                        playerActivityData?.setAfterBuffered(receiveMessage.toInt())
+
+                    }
                     CONST.N_PLAYER_PLAY->{
                         playerActivityData?.playVideo()
                     }
@@ -185,5 +193,4 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
         }
         return null
     }
-
 }

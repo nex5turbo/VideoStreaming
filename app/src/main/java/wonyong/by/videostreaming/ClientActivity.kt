@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_client.*
+import net.ypresto.qtfaststart.QtFastStart
 import java.io.File
 import java.net.Inet4Address
 import java.net.InetAddress

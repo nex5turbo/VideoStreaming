@@ -28,6 +28,8 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     val CONST = Consts()
     var timeRateArray = arrayListOf<Long>()
     var nowPosition = 0
+    var bufferPosition = 0
+    var bufferReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,5 +165,9 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
 
     override fun serverOnWait2() {
         ServerBufferThread(CONST.L_PLAYER_SERVER_WAITING_RECEIVE_2, this).start()
+    }
+
+    override fun setAfterBuffered(position: Int) {
+
     }
 }

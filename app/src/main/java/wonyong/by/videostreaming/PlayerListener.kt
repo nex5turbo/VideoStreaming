@@ -8,4 +8,5 @@ interface PlayerListener {
     fun backward(position : Int)
     fun serverOnWait1()
     fun serverOnWait2()
+    fun setAfterBuffered(position : Int)
 }
