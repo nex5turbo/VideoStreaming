@@ -16,11 +16,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     lateinit var deviceInfo : DeviceInfo
+    lateinit var deviceInfo2 : DeviceInfo
+    lateinit var deviceInfo3 : DeviceInfo
     var toastAct : ToastAct = ToastAct()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         getDeviceInfo()
+
         requestLocationPermission()
         requestPhoneStatePermission()
         buttonListener()
@@ -55,12 +58,16 @@ class MainActivity : AppCompatActivity() {
         enterServerDownloadButton.setOnClickListener {
             val i : Intent = Intent(this, ServerActivity::class.java)
             i.putExtra("deviceInfo", deviceInfo)
+            i.putExtra("deviceInfo2", deviceInfo2)
+            i.putExtra("deviceInfo3", deviceInfo3)
             i.putExtra("DS", "download")
             startActivity(i)
         }
         enterClientDownloadbutton.setOnClickListener {
             val i : Intent = Intent(this, ClientActivity::class.java)
             i.putExtra("deviceInfo", deviceInfo)
+            i.putExtra("deviceInfo2", deviceInfo2)
+            i.putExtra("deviceInfo3", deviceInfo3)
             i.putExtra("DS", "download")
             startActivity(i)
         }
@@ -68,6 +75,8 @@ class MainActivity : AppCompatActivity() {
         enterClientStreamingButton.setOnClickListener {
             val i : Intent = Intent(this, ClientActivity::class.java)
             i.putExtra("deviceInfo", deviceInfo)
+            i.putExtra("deviceInfo2", deviceInfo2)
+            i.putExtra("deviceInfo3", deviceInfo3)
             i.putExtra("DS", "streaming")
             startActivity(i)
         }
@@ -75,6 +84,8 @@ class MainActivity : AppCompatActivity() {
         enterServerStreamingButton.setOnClickListener {
             val i : Intent = Intent(this, ServerActivity::class.java)
             i.putExtra("deviceInfo", deviceInfo)
+            i.putExtra("deviceInfo2", deviceInfo2)
+            i.putExtra("deviceInfo3", deviceInfo3)
             i.putExtra("DS", "streaming")
             startActivity(i)
         }
@@ -93,7 +104,8 @@ class MainActivity : AppCompatActivity() {
         var heightMM = heightPixel / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, displayInfo)
 
         deviceInfo = DeviceInfo(widthPixel, heightPixel, widthMM, heightMM, 0, null, null)
-
+        deviceInfo2 = DeviceInfo(widthPixel, heightPixel, widthMM, heightMM, 1, null, null)
+        deviceInfo3 = DeviceInfo(widthPixel,heightPixel,widthMM,heightMM, 2, null, null)
         toastAct.toast(Build.ID, this)
 
 

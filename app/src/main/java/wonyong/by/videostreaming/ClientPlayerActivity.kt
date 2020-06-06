@@ -23,6 +23,8 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     var videoPath = ""
     var hostAddress : InetAddress? = null
     lateinit var deviceInfo:DeviceInfo
+    lateinit var deviceInfo2:DeviceInfo
+    lateinit var deviceInfo3:DeviceInfo
     var socket : Socket? = null
     var bufferSocket : Socket? = null
     var CONST = Consts()
@@ -57,6 +59,8 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         videoPath = intent.getStringExtra("videoPath")
         hostAddress = intent.getSerializableExtra("hostAddress") as InetAddress
         deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+        deviceInfo2 = intent.getSerializableExtra("deviceInfo2") as DeviceInfo
+        deviceInfo3 = intent.getSerializableExtra("deviceInfo3") as DeviceInfo
         retriever = MediaMetadataRetriever()
         retriever.setDataSource(videoPath)
         socketButton.gravity = Gravity.CENTER
@@ -69,8 +73,10 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         var W = deviceInfo?.widthPixel
         var H = deviceInfo?.heightPixel
         var displayMetrics = getApplicationContext().getResources().getDisplayMetrics()
+        var W2 = deviceInfo2?.widthPixel
+        var W3 = deviceInfo3?.widthPixel
+        var aX = 0
 
-//
 //        var videoHeight = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
 //        var videoWidth = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
 
@@ -82,8 +88,13 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
 
         //픽셀단위로 옮기는 변수
-        var aX = -(deviceInfo.deviceOrder-1)*1080
-        Log.v("ClientPlayerActivity", "afterAD2 : "+aX)
+        if(deviceInfo.deviceOrder==0) {
+            aX = -(W + W2 + W3)
+            Log.v("ClientPlayerActivity", "afterAD2 : " + aX)
+        } else if(deviceInfo2.deviceOrder == 1){
+            aX = -(W2 + W3)
+            Log.v("ClientPlayerActivity", "after Ad2 : "+ aX)
+        }
 
         //aX = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, aX.toFloat(), displayMetrics).toInt()
 
@@ -95,8 +106,8 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         }
         vv.setOnPreparedListener(PreparedListener)
         vv.setVideoURI(Uri.parse(videoPath))
-        vv.layoutParams.width = 3960
-        vv.layoutParams.height = H.toInt()
+        vv.layoutParams.width = W+W2+W3
+        vv.layoutParams.height = H
         vv.setX(aX.toFloat())
         lp = FrameLayout.LayoutParams(3960, vv.layoutParams.height)
         lp.leftMargin = 0
