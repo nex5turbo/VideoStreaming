@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_server.*
+import java.lang.Thread.sleep
 import java.net.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -33,8 +34,12 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     lateinit var widgetStatusTextView : TextView
     //위젯정보 끝
 
+    var DN = ""
+    var streamingOrder = 0
     val CONST = Consts()
     var serverSocket : ServerSocket? = null
+    var dataServerSocket : ServerSocket? = null
+    var dataSocket : Socket? = null
     var socket : Socket? = null
     lateinit var task :ServerNetworkTask
     var deviceList = arrayListOf<DeviceInfo>()
@@ -66,6 +71,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     private fun getInfo() {
         serverDeviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+        DN = intent.getStringExtra("DS")
     }
 
 
@@ -126,10 +132,20 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         serverWifiDirectSendVideoButton.setOnClickListener {
             if(resultPath == null){
                 Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
-            }
 
-            callAsyncTask(CONST.N_REQUEST_READY_FILE_TRANSFER)
-            playEnable()
+            }else {
+                if(DN.equals("streaming")){
+                    callAsyncTask(CONST.N_FILE_STREAMING_START)
+                    sleep(500)
+                    streamingOrder++
+                    callAsyncTask(CONST.N_FILE_STREAMING_START)
+                    playEnable()
+                }else{
+                    callAsyncTask(CONST.N_REQUEST_READY_FILE_TRANSFER)
+                    playEnable()
+                }
+
+            }
 
         }
         serverWifiDirectFindVideoButton.setOnClickListener {
@@ -276,9 +292,10 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         widthMM: Float,
         heightMM: Float,
         deviceOrder: Int,
-        sock : Socket
+        sock : Socket,
+        dataSock : Socket
     ) {
-        var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, sock)
+        var di = DeviceInfo(heightPixel, widthPixel, widthMM, heightMM, deviceOrder, sock, dataSock)
         clientDeviceInfoList.add(di)
     }
 

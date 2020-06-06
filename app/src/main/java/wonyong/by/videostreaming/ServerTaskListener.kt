@@ -4,7 +4,7 @@ import java.net.Socket
 
 interface ServerTaskListener {
 
-    fun addClientDeviceInfo(heightPixel:Int, widthPixel:Int, widthMM:Float,  heightMM:Float, deviceOrder:Int, sock : Socket)
+    fun addClientDeviceInfo(heightPixel:Int, widthPixel:Int, widthMM:Float,  heightMM:Float, deviceOrder:Int, sock : Socket, dataSock : Socket)
     fun playVideo()
     fun filetransferOver()
     fun playEnable()

@@ -17,43 +17,43 @@
             app:layout_constraintBottom_toTopOf="@+id/deviceInfoTextView" app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
     <Button
-            android:text="서버"
+            android:id="@+id/enterServerDownloadButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/enterServerButton"
-            app:layout_constraintStart_toStartOf="@+id/checkDeviceInfoButton"
-            android:layout_marginStart="6dp" app:layout_constraintTop_toBottomOf="@+id/checkDeviceInfoButton"
-            android:layout_marginBottom="20dp" app:layout_constraintBottom_toTopOf="@+id/videoButton"/>
+            android:layout_marginStart="6dp"
+            android:layout_marginBottom="20dp"
+            android:text="서버다운" app:layout_constraintBottom_toTopOf="@+id/enterServerStreamingButton"
+            app:layout_constraintStart_toStartOf="@+id/enterClientStreamingButton" app:layout_constraintTop_toBottomOf="@+id/enterClientStreamingButton"/>
     <Button
-            android:text="기기정보확인"
+            android:id="@+id/enterClientStreamingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/checkDeviceInfoButton"
-            app:layout_constraintStart_toStartOf="@+id/videoButton"
-            app:layout_constraintTop_toBottomOf="@+id/enterClientbutton" android:layout_marginBottom="13dp"
-            app:layout_constraintBottom_toTopOf="@+id/enterServerButton"/>
+            android:layout_marginBottom="13dp"
+            android:text="클라스트"
+            app:layout_constraintBottom_toTopOf="@+id/enterServerDownloadButton" app:layout_constraintStart_toStartOf="@+id/enterServerStreamingButton"
+            app:layout_constraintTop_toBottomOf="@+id/enterClientDownloadbutton"/>
     <TextView
             android:text="TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/deviceInfoTextView"
             app:layout_constraintTop_toBottomOf="@+id/mainTitle" android:layout_marginBottom="131dp"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/enterClientbutton"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@+id/enterClientDownloadbutton"
             app:layout_constraintStart_toStartOf="parent"/>
     <Button
-            android:text="비디오테스트"
+            android:id="@+id/enterServerStreamingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/videoButton"
-            app:layout_constraintTop_toBottomOf="@+id/enterServerButton" android:layout_marginBottom="58dp"
+            android:layout_marginBottom="58dp"
+            android:text="서버스트" app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@+id/enterServerDownloadButton"/>
     <Button
-            android:text="클라"
+            android:id="@+id/enterClientDownloadbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/enterClientbutton"
-            app:layout_constraintStart_toStartOf="@+id/checkDeviceInfoButton"
-            android:layout_marginStart="6dp" app:layout_constraintTop_toBottomOf="@+id/deviceInfoTextView"
-            android:layout_marginBottom="13dp" app:layout_constraintBottom_toTopOf="@+id/checkDeviceInfoButton"/>
+            android:layout_marginStart="6dp"
+            android:layout_marginBottom="13dp"
+            android:text="클라다운" app:layout_constraintBottom_toTopOf="@+id/enterClientStreamingButton"
+            app:layout_constraintStart_toStartOf="@+id/enterClientStreamingButton" app:layout_constraintTop_toBottomOf="@+id/deviceInfoTextView"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

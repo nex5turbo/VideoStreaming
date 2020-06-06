@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_client.*
+import net.ypresto.qtfaststart.QtFastStart
 import java.io.File
 import java.net.Inet4Address
 import java.net.InetAddress
@@ -37,7 +38,9 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var widgetTitle : TextView
     //위젯정보 끝
 
+    var DN = ""
     var socket : Socket? = null
+    var dataSocket : Socket? = null
     lateinit var hostAddress : InetAddress
     lateinit var task : ClientNetworkTask
     lateinit var wifiManager:WifiManager
@@ -69,6 +72,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
 
     private fun getInfo() {
         deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+        DN = intent.getStringExtra("DS")
     }
 
 
@@ -281,6 +285,7 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         i.putExtra("videoPath", storage + "/" + fileName)
         i.putExtra("hostAddress", hostAddress)
         deviceInfo.socket = null
+        deviceInfo.dataSocket = null
         i.putExtra("deviceInfo", deviceInfo)
         startActivity(i)
     }
