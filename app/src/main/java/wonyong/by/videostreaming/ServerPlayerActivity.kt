@@ -2,6 +2,7 @@ package wonyong.by.videostreaming
 
 import android.content.Context
 import android.media.AudioManager
+import android.net.Uri
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,8 +10,10 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.MediaController
 import android.widget.SeekBar
+import android.widget.VideoView
 import kotlinx.android.synthetic.main.activity_server_player.*
 import kotlinx.android.synthetic.main.activity_video_test.*
 import java.lang.Thread.sleep
@@ -30,6 +33,12 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     var nowPosition = 0
     var bufferPosition = 0
     var bufferReady = false
+    lateinit var deviceInfo:DeviceInfo
+    lateinit var deviceInfo2:DeviceInfo
+    lateinit var deviceInfo3:DeviceInfo
+    lateinit var vv : VideoView
+    lateinit var lp : FrameLayout.LayoutParams
+    lateinit var fls : FrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +53,9 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     private fun init() {
+        deviceInfo = intent.getSerializableExtra("deviceInfo") as DeviceInfo
+        deviceInfo2 = intent.getSerializableExtra("deviceInfo2") as DeviceInfo
+        deviceInfo3 = intent.getSerializableExtra("deviceInfo3") as DeviceInfo
         callAsyncTask(CONST.L_PLAYER_ON_CONNECT)
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val nMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
@@ -81,8 +93,29 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     private fun setVideo() {
 //        mediaController = MediaController(this@ServerPlayerActivity)
 //        serverVideoView.setMediaController(mediaController)
-        serverVideoView.setVideoPath(videoPath)
-        serverVideoView.requestFocus()
+
+        var W = deviceInfo?.widthPixel
+        var H = deviceInfo?.heightPixel
+        var W2 = deviceInfo2?.widthPixel
+        var W3 = deviceInfo3?.widthPixel
+
+        var aX = -(W+W2)
+
+
+        fls = findViewById(R.id.fls)
+        serverVideoView.setVideoURI(Uri.parse(videoPath))
+        serverVideoView.layoutParams.width = W+W2+W3
+        serverVideoView.layoutParams.height = H
+        serverVideoView.setX(aX.toFloat())
+        lp = FrameLayout.LayoutParams(vv.layoutParams.width, serverVideoView.layoutParams.height)
+        lp.leftMargin = 0
+        lp.topMargin = 0
+        lp.rightMargin = 0
+        lp.bottomMargin = 0
+        Log.v("ClientPlayerActivity", "afterAD3 : "+aX)
+        serverVideoView.layoutParams = lp
+        serverVideoView.requestLayout()
+
         controllerPlayButton.setOnClickListener {
             Log.d("###", "clicked")
             callAsyncTask(CONST.N_PLAYER_PLAY)
@@ -116,6 +149,7 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
                 return false
             }
         })
+        fls.requestLayout()
     }
 
 

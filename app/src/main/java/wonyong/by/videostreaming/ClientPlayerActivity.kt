@@ -89,10 +89,10 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
         //픽셀단위로 옮기는 변수
         if(deviceInfo.deviceOrder==0) {
-            aX = -(W + W2 + W3)
+            aX = 0
             Log.v("ClientPlayerActivity", "afterAD2 : " + aX)
         } else if(deviceInfo2.deviceOrder == 1){
-            aX = -(W2 + W3)
+            aX = -(W)
             Log.v("ClientPlayerActivity", "after Ad2 : "+ aX)
         }
 
@@ -109,7 +109,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
         vv.layoutParams.width = W+W2+W3
         vv.layoutParams.height = H
         vv.setX(aX.toFloat())
-        lp = FrameLayout.LayoutParams(3960, vv.layoutParams.height)
+        lp = FrameLayout.LayoutParams(vv.layoutParams.width, vv.layoutParams.height)
         lp.leftMargin = 0
         lp.topMargin = 0
         lp.rightMargin = 0
