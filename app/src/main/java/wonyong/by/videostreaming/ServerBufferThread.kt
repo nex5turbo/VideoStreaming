@@ -20,16 +20,24 @@ class ServerBufferThread(var mode : String, var playerActivity: ServerPlayerActi
                         playerActivity?.bufferReady = true
                     else{
                         playerActivity?.bufferReady = false
-                        playerActivity?.callAsyncTask(CONST.N_PLAYER_PLAY)
+                        playerActivity?.callAsyncTask(CONST.N_BUFFER_OVER)
                     }
+                    playerActivity?.serverVideoView.seekTo(playerActivity?.bufferPosition)
                     playerActivity?.serverOnWait1()
                     return
                 }
 
                 CONST.N_PLAYER_BUFFER->{
+                    if(playerActivity?.isForwarding){
+                        var dos = DataOutputStream(socket.getOutputStream())
+                        dos.writeUTF("FORWARDING")
+                        playerActivity?.serverOnWait1()
+                        return
+                    }
+                    var dos = DataOutputStream(socket.getOutputStream())
+                    dos.writeUTF("OK")
                     playerActivity?.pauseVideo()
                     playerActivity?.bufferPosition = playerActivity?.serverVideoView.currentPosition
-                    playerActivity?.serverVideoView.seekTo(playerActivity?.bufferPosition)
                     var i = 0
                     for(sock: Socket in playerActivity!!.socketList){
                         Log.d("###", "iteration"+i.toString())
@@ -70,13 +78,21 @@ class ServerBufferThread(var mode : String, var playerActivity: ServerPlayerActi
                         playerActivity?.bufferReady = false
                         playerActivity?.callAsyncTask(CONST.N_PLAYER_PLAY)
                     }
+                    playerActivity?.serverVideoView.seekTo(playerActivity?.bufferPosition)
                     playerActivity?.serverOnWait2()
                     return
                 }
                 CONST.N_PLAYER_BUFFER->{
+                    if(playerActivity?.isForwarding){
+                        var dos = DataOutputStream(socket.getOutputStream())
+                        dos.writeUTF("FORWARDING")
+                        playerActivity?.serverOnWait2()
+                        return
+                    }
+                    var dos = DataOutputStream(socket.getOutputStream())
+                    dos.writeUTF("OK")
                     playerActivity?.pauseVideo()
                     playerActivity?.bufferPosition = playerActivity?.serverVideoView.currentPosition
-                    playerActivity?.serverVideoView.seekTo(playerActivity?.bufferPosition)
                     var i = 0
                     for(sock: Socket in playerActivity!!.socketList){
                         Log.d("###", "iteration"+i.toString())

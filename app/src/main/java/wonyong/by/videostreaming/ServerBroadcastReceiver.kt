@@ -8,7 +8,6 @@ import android.net.wifi.p2p.WifiP2pManager
 import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_server.*
-import kotlinx.android.synthetic.main.activity_wifi_direct.*
 
 class ServerBroadcastReceiver(var mManager : WifiP2pManager,
                               var mChannel : WifiP2pManager.Channel,
@@ -20,10 +19,10 @@ class ServerBroadcastReceiver(var mManager : WifiP2pManager,
         if(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)){
             var state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)
             if(state == WifiP2pManager.WIFI_P2P_STATE_ENABLED){
-                Toast.makeText(context, "Wifi is on", Toast.LENGTH_SHORT).show()
+
             }
             else{
-                Toast.makeText(context, "Wifi is off", Toast.LENGTH_SHORT).show()
+
             }
         }
         else if(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)){

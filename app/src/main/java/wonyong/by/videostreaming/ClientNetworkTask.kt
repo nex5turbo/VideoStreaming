@@ -3,6 +3,7 @@ package wonyong.by.videostreaming
 import android.os.AsyncTask
 import android.util.Log
 import java.io.*
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.net.Socket
 import java.util.*
@@ -31,50 +32,17 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                 if (receiveMessage.equals(CONST.N_PLAY_VIDEO)) {
                     clientActivityData?.playVideo()
                     return null
-                }else if(receiveMessage.equals(CONST.N_REQUEST_READY_FILE_TRANSFER)){
-
-                    receiveMessage = dis.readUTF()
-                    clientActivityData?.fileName = receiveMessage
-                    var dos = DataOutputStream(socket?.getOutputStream())
-                    var file = File(clientActivityData?.storage + "/" + receiveMessage)
-                    if(file.exists()){
-                        dos.writeUTF(CONST.N_FILE_EXIST)
-                        clientActivityData?.filetransferOver()
-                        clientActivityData?.onWait()
-                        return null
-                    }
-                    dos.writeUTF(CONST.N_READY_FILE_TRANSFER)
-
-                    var FILE_OUTPUT_STREAM = FileOutputStream(file)
-                    var BUFFERED_OUTPUT_STREAM = BufferedOutputStream(FILE_OUTPUT_STREAM)
-                    var len : Int = 0
-                    var lenSum = 0
-                    var size = 1024
-                    var data = ByteArray(size)
-                    while(len > -1){
-                        if(len == -1){
-                            break
-                        }
-                        len = dis.read(data)
-                        if(len == -1){
-                            break
-                        }
-                        lenSum = lenSum + len
-                        BUFFERED_OUTPUT_STREAM.write(data, 0, len)
-                    }
-
-                    Log.d("###", "File transfer over")
-
-                    clientActivityData?.filetransferOver()
-                    clientActivityData?.socket?.close()
-                    clientActivityData?.socket = Socket(clientActivityData?.hostAddress, CONST.NETWORK_MESSAGE_PORT)
                 }else if(receiveMessage.equals(CONST.N_FILE_STREAMING_START)){
                     receiveMessage = dis.readUTF()
                     clientActivityData?.fileName = receiveMessage
+                    receiveMessage = dis.readUTF()
+                    var st = StringTokenizer(receiveMessage, CONST.DELIMETER)
+                    clientActivityData?.fileSize = st.nextToken().toLong()
+                    clientActivityData?.moovSize = st.nextToken().toLong()
                     clientActivityData?.onWait()
                     Log.d("###fileName", clientActivityData?.fileName)
                     var fileDis = DataInputStream(dataSocket?.getInputStream())
-                    var file = File(clientActivityData?.storage + "/" + receiveMessage)
+                    var file = File(clientActivityData?.storage + "/" + clientActivityData?.fileName)
                     var FILE_OUTPUT_STREAM = FileOutputStream(file)
                     var BUFFERED_OUTPUT_STREAM = BufferedOutputStream(FILE_OUTPUT_STREAM)
                     var len : Int = 0
@@ -82,16 +50,16 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                     var size = 4096
                     var data = ByteArray(size)
                     while(len > -1){
-                        if(len == -1){
-                            break
-                        }
                         len = fileDis.read(data)
                         if(len == -1){
                             break
                         }
                         lenSum = lenSum + len
                         BUFFERED_OUTPUT_STREAM.write(data, 0, len)
+                        BUFFERED_OUTPUT_STREAM.flush()
                     }
+                    BUFFERED_OUTPUT_STREAM.close()
+                    FILE_OUTPUT_STREAM.close()
                     Log.d("###", "File transfer over")
 
                     return null
@@ -121,8 +89,10 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                 var receiveMessage = dis.readUTF()
                 Log.d("###", receiveMessage)
                 var st = StringTokenizer(receiveMessage, CONST.DELIMETER)
-                clientActivityData?.totalWidthPixel = st.nextToken().toInt()
+                clientActivityData?.totalWidthMM = st.nextToken().toFloat()
                 clientActivityData?.deviceInfo?.deviceOrder = st.nextToken().toInt()
+                clientActivityData?.aX = st.nextToken().toFloat()
+                Log.d("###onconnectax", clientActivityData?.aX.toString())
                 dos.flush()
                 clientActivityData?.onWait()
                 return null
@@ -148,7 +118,19 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
             }
             CONST.N_PLAYER_BUFFER->{
                 var dos = DataOutputStream(playerActivityData?.bufferSocket?.getOutputStream())
+                var dis = DataInputStream(playerActivityData?.bufferSocket?.getInputStream())
                 dos.writeUTF(CONST.N_PLAYER_BUFFER)
+                var receiveMessage = dis.readUTF()
+                while(receiveMessage.equals("FORWARDING")){
+                    sleep(500)
+                    dos.writeUTF(CONST.N_PLAYER_BUFFER)
+                    receiveMessage = dis.readUTF()
+                }
+                return null
+            }
+            CONST.N_READY_FORWARD->{
+                var dos = DataOutputStream(playerActivityData?.socket?.getOutputStream())
+                dos.writeUTF(CONST.N_READY_FORWARD)
                 dos.flush()
                 return null
             }
@@ -162,9 +144,12 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                     CONST.N_PLAYER_BUFFER->{
                         playerActivityData?.pauseVideo()
                         receiveMessage = dis.readUTF()
-                        Log.d("###", receiveMessage)
+                        playerActivityData?.bufferPosition = receiveMessage.toInt()
                         playerActivityData?.setAfterBuffered(receiveMessage.toInt())
 
+                    }
+                    CONST.N_BUFFER_OVER->{
+                        playerActivityData?.bufferOver(playerActivityData!!.bufferPosition)
                     }
                     CONST.N_PLAYER_PLAY->{
                         playerActivityData?.playVideo()

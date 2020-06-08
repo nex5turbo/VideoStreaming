@@ -18,8 +18,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_server.*
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileInputStream
 import java.lang.Thread.sleep
 import java.net.*
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -42,21 +47,19 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     var dataSocket : Socket? = null
     var socket : Socket? = null
     lateinit var task :ServerNetworkTask
-    var deviceList = arrayListOf<DeviceInfo>()
     lateinit var wifiManager:WifiManager
     lateinit var wifiP2pManager : WifiP2pManager;
     lateinit var wifiP2pChannel : WifiP2pManager.Channel
     lateinit var broadcastReceiver : ServerBroadcastReceiver
     lateinit var intentFilter : IntentFilter
-    lateinit var deviceNameArray:Array<String?>
-    lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var serverDeviceInfo: DeviceInfo
     var clientDeviceInfoList = ArrayList<DeviceInfo>()
     var resultPath : String? = null
     var fileName = ""
-    var connectedDevice = 1
-    var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
-    var totalWidthPixel = 0
+    var fileSize : Long = 0
+    var moovSize = 0
+    var totalWidthMM = 0f
+    var aX = 0f
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,17 +137,11 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 Toast.makeText(this, "Video not selected", Toast.LENGTH_SHORT).show()
 
             }else {
-                if(DN.equals("streaming")){
-                    callAsyncTask(CONST.N_FILE_STREAMING_START)
-                    sleep(500)
-                    streamingOrder++
-                    callAsyncTask(CONST.N_FILE_STREAMING_START)
-                    playEnable()
-                }else{
-                    callAsyncTask(CONST.N_REQUEST_READY_FILE_TRANSFER)
-                    playEnable()
-                }
-
+                callAsyncTask(CONST.N_FILE_STREAMING_START)
+                sleep(500)
+                streamingOrder++
+                callAsyncTask(CONST.N_FILE_STREAMING_START)
+                playEnable()
             }
 
         }
@@ -158,6 +155,8 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     override fun playVideo() {
         val i = Intent(this, ServerPlayerActivity::class.java)
         i.putExtra("videoPath", resultPath + "/" + fileName)
+        i.putExtra("videoSize", totalWidthMM)
+        i.putExtra("aX", aX)
         startActivity(i)
     }
 
@@ -258,10 +257,61 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                 Log.e("###", resultPath)
                 Log.e("###", fileName)
                 Toast.makeText(this, resultPath, Toast.LENGTH_SHORT).show()
-                serverWifiDirectTitle.setText(resultPath)
+                checkmoovSize()
                 sendEnable()
             }
         }
+    }
+
+    private fun checkmoovSize() {
+        var selectFile = File(resultPath+"/"+fileName)
+        fileSize = selectFile.length()
+
+        var fis = FileInputStream(selectFile)
+        var bis = BufferedInputStream(fis)
+        var buf = ByteArray(4)
+        bis.read(buf)
+
+        var moovSizeByte = ByteArray(4)
+        var ftypSizeByte = ByteArray(4)
+
+        ftypSizeByte[0] = buf[0]
+        ftypSizeByte[1] = buf[1]
+        ftypSizeByte[2] = buf[2]
+        ftypSizeByte[3] = buf[3]
+
+        var ftypSize = ByteBuffer.wrap(ftypSizeByte).order(ByteOrder.BIG_ENDIAN).getInt()
+        Log.d("###", ftypSize.toString())
+
+        var buf2 = ByteArray(ftypSize-4)
+        Log.d("###", (ftypSize-4).toString())
+
+        bis.read(buf2)
+        Log.d("###", selectFile.length().toString())
+
+        var meg = String(buf2)
+        if(!meg.contains("ftyp")) {
+            Log.d("###ftyp", "Not available to Stream")
+            return
+        }
+
+        var buf3 = ByteArray(4)
+        bis.read(buf3)
+
+        moovSizeByte[0] = buf3[0]
+        moovSizeByte[1] = buf3[1]
+        moovSizeByte[2] = buf3[2]
+        moovSizeByte[3] = buf3[3]
+        moovSize = ByteBuffer.wrap(moovSizeByte).order(ByteOrder.BIG_ENDIAN).getInt() + ftypSize
+        var moovBuff = ByteArray(moovSize)
+        bis.read(moovBuff)
+        var moovMsg = String(moovBuff)
+        if(!moovMsg.contains("moov")){
+            Log.d("###moov", "Not available to Stream")
+            return
+        }
+        Log.d("###moov", moovSize.toString())
+        Toast.makeText(this, "moov size : "+moovSize.toString()+"B, mdat size : "+(fileSize-moovSize).toString()+"B", Toast.LENGTH_LONG).show()
     }
 
     fun splitPathName(){
@@ -313,9 +363,10 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
 
     override fun calcPixel() {
         for(di:DeviceInfo in clientDeviceInfoList){
-            totalWidthPixel += di.widthPixel
+            totalWidthMM += di.widthMM
         }
-        totalWidthPixel += serverDeviceInfo.widthPixel
+        aX = totalWidthMM
+        totalWidthMM += serverDeviceInfo.widthMM
     }
 
 }

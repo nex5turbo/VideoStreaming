@@ -8,7 +8,6 @@ import android.net.wifi.p2p.WifiP2pManager
 import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_client.*
-import kotlinx.android.synthetic.main.activity_wifi_direct.*
 
 class ClientBroadcastReceiver(var mManager : WifiP2pManager,
                               var mChannel : WifiP2pManager.Channel,

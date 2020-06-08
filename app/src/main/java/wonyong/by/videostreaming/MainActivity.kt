@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.util.Log
 import android.util.TypedValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -52,18 +53,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buttonListener() {
-        enterServerDownloadButton.setOnClickListener {
-            val i : Intent = Intent(this, ServerActivity::class.java)
-            i.putExtra("deviceInfo", deviceInfo)
-            i.putExtra("DS", "download")
-            startActivity(i)
-        }
-        enterClientDownloadbutton.setOnClickListener {
-            val i : Intent = Intent(this, ClientActivity::class.java)
-            i.putExtra("deviceInfo", deviceInfo)
-            i.putExtra("DS", "download")
-            startActivity(i)
-        }
 
         enterClientStreamingButton.setOnClickListener {
             val i : Intent = Intent(this, ClientActivity::class.java)
@@ -89,8 +78,17 @@ class MainActivity : AppCompatActivity() {
         var widthPixel = displayInfo.widthPixels
         var heightPixel = displayInfo.heightPixels
 
+        Log.d("###xdpi", displayInfo.xdpi.toString())
+        Log.d("###xdpiint", displayInfo.xdpi.toInt().toString())
+        Log.d("###ydpi", displayInfo.ydpi.toString())
+        Log.d("###ydpiint", displayInfo.ydpi.toInt().toString())
+
+        Log.d("###wpx", widthPixel.toString())
+        Log.d("###hpx", heightPixel.toString())
         var widthMM = widthPixel / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, displayInfo)
+        Log.d("###wMM", widthMM.toString())
         var heightMM = heightPixel / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 1f, displayInfo)
+        Log.d("###hMM", heightMM.toString())
 
         deviceInfo = DeviceInfo(widthPixel, heightPixel, widthMM, heightMM, 0, null, null)
 

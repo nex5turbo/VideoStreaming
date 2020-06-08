@@ -2,17 +2,19 @@ package wonyong.by.videostreaming
 
 import android.content.Context
 import android.media.AudioManager
+import android.media.MediaMetadataRetriever
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.MediaController
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_server_player.*
-import kotlinx.android.synthetic.main.activity_video_test.*
 import java.lang.Thread.sleep
 import java.net.ServerSocket
 import java.net.Socket
@@ -24,12 +26,17 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     var bufferSocketList = arrayListOf<Socket>()
     var playerServerSocket : ServerSocket? = null
     var playerBufferSocket : ServerSocket? = null
-    var mediaController : MediaController? = null
+    var bufferReady = false
+    var isForwarding = false
+    var isPlaying = false
     val CONST = Consts()
-    var timeRateArray = arrayListOf<Long>()
     var nowPosition = 0
     var bufferPosition = 0
-    var bufferReady = false
+    var totalWidthMM = 0f
+    var aX = 0f
+    var videoWidthPixel = 0
+    var videoHeightPixel = 0
+    lateinit var retriever : MediaMetadataRetriever
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +46,8 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
         setContentView(R.layout.activity_server_player)
 
         videoPath = intent.getStringExtra("videoPath")
+        totalWidthMM = intent.getFloatExtra("videoSize", 0f)
+        aX = -(intent.getFloatExtra("aX", 0f))
         init()
         setVideo()
     }
@@ -79,18 +88,37 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     private fun setVideo() {
+
+        var dm = applicationContext.resources.displayMetrics
 //        mediaController = MediaController(this@ServerPlayerActivity)
 //        serverVideoView.setMediaController(mediaController)
+        retriever = MediaMetadataRetriever()
+        retriever.setDataSource(videoPath)
+        videoHeightPixel = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt()
+        videoWidthPixel = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH).toInt()
         serverVideoView.setVideoPath(videoPath)
+        serverVideoView.layoutParams.width = (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, totalWidthMM, dm)).toInt()
+        serverVideoView.layoutParams.height = (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, totalWidthMM*videoHeightPixel/videoWidthPixel, dm)).toInt()
+        retriever.release()
+        serverVideoView.x = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, aX, dm)-48
         serverVideoView.requestFocus()
         controllerPlayButton.setOnClickListener {
             Log.d("###", "clicked")
+            isPlaying = true
             callAsyncTask(CONST.N_PLAYER_PLAY)
         }
         controllerPauseButton.setOnClickListener {
+            isPlaying = false
+            nowPosition = serverVideoView.currentPosition
+            Log.d("###", nowPosition.toString())
             callAsyncTask(CONST.N_PLAYER_PAUSE)
         }
         forwardButton.setOnClickListener {
+            if(isForwarding){
+                return@setOnClickListener
+            }
+            isForwarding = true
+            serverVideoView.pause()
             nowPosition = serverVideoView.currentPosition+10000
             callAsyncTask(CONST.N_PLAYER_FORWARD)
         }
@@ -127,11 +155,7 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     override fun playVideo() {
-        var cur = System.currentTimeMillis()
         serverVideoView.start()
-        var after = System.currentTimeMillis()
-        var delay = after - cur
-        Log.d("###", delay.toString())
     }
 
     override fun pauseVideo() {
@@ -144,12 +168,11 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
 
     override fun forward(position : Int) {
         serverVideoView.seekTo(nowPosition)
-        serverVideoView.start()
     }
 
     override fun backward(position : Int) {
         serverVideoView.seekTo(nowPosition)
-        serverVideoView.start()
+//        serverVideoView.start()
     }
 
     override fun onDestroy() {
@@ -168,6 +191,9 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
     }
 
     override fun setAfterBuffered(position: Int) {
+
+    }
+    override fun bufferOver(position: Int) {
 
     }
 }

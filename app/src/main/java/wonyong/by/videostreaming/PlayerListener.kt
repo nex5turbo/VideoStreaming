@@ -9,4 +9,5 @@ interface PlayerListener {
     fun serverOnWait1()
     fun serverOnWait2()
     fun setAfterBuffered(position : Int)
+    fun bufferOver(position:Int)
 }

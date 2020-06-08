@@ -40,13 +40,17 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".ServerPlayerActivity"></activity>
-        <activity android:name=".ClientPlayerActivity" />
-        <activity android:name=".ClientActivity" />
-        <activity android:name=".ServerActivity" />
-        <activity android:name=".VideoTestActivity" />
-        <activity android:name=".WifiDirectActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".ServerPlayerActivity"
+                  android:screenOrientation="portrait">
+</activity>
+        <activity android:name=".ClientPlayerActivity"
+                  android:screenOrientation="portrait"/>
+        <activity android:name=".ClientActivity"
+                  android:screenOrientation="portrait"/>
+        <activity android:name=".ServerActivity"
+                  android:screenOrientation="portrait"/>
+        <activity android:name=".MainActivity"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

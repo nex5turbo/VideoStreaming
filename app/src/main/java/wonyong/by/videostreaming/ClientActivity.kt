@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_client.*
-import net.ypresto.qtfaststart.QtFastStart
 import java.io.File
 import java.net.Inet4Address
 import java.net.InetAddress
@@ -51,12 +50,15 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
     lateinit var deviceNameArray:Array<String?>
     lateinit var deviceArray:Array<WifiP2pDevice?>
     lateinit var deviceInfo: DeviceInfo
-    var totalWidthPixel = 0
+    var totalWidthMM = 0f
     var localAddress = ""
     val CONST = Consts()
     var peers:ArrayList<WifiP2pDevice> = ArrayList<WifiP2pDevice>()
     var storage = Environment.getExternalStorageDirectory().absolutePath + "/VideoStreaming"
     var fileName = ""
+    var fileSize : Long = 0
+    var moovSize : Long = 0
+    var aX = 0f
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -287,43 +289,11 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
         deviceInfo.socket = null
         deviceInfo.dataSocket = null
         i.putExtra("deviceInfo", deviceInfo)
+        i.putExtra("fileSize", fileSize)
+        i.putExtra("moovSize", moovSize)
+        i.putExtra("videoSize", totalWidthMM)
+        i.putExtra("aX", aX)
         startActivity(i)
-    }
-
-
-    fun getLocalIPAddress():ByteArray?{
-        val en = NetworkInterface.getNetworkInterfaces()
-        while (en.hasMoreElements())
-        {
-            val intf = en.nextElement()
-            val enumIpAddr = intf.getInetAddresses()
-            while (enumIpAddr.hasMoreElements())
-            {
-                val inetAddress = enumIpAddr.nextElement()
-                if (!inetAddress.isLoopbackAddress())
-                {
-                    if (inetAddress is Inet4Address)
-                    { // fix for Galaxy Nexus. IPv4 is easy to use :-)
-                        return inetAddress.getAddress()
-                    }
-                    //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
-                }
-            }
-        }
-        return null
-    }
-
-    fun getDottedDecimalIP(ipAddr:ByteArray):String{
-        var ipAddrString = ""
-        for (i in 0 until ipAddr.size)
-        {
-            if (i > 0)
-            {
-                ipAddrString += "."
-            }
-            ipAddrString += ipAddr[i] and 0xFF.toByte()
-        }
-        return ipAddrString
     }
 
     override fun filetransferOver() {

@@ -18,6 +18,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:text="소켓연결"
+            android:text="배치완료"
     />
 </FrameLayout>
