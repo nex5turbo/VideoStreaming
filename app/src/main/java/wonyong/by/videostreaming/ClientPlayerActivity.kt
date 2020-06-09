@@ -17,6 +17,7 @@ import android.widget.MediaController
 import android.widget.VideoView
 import kotlinx.android.synthetic.main.activity_client_player.*
 import java.io.File
+import java.lang.Thread.sleep
 import java.net.InetAddress
 import java.net.Socket
 
@@ -29,7 +30,6 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     var socket : Socket? = null
     var bufferSocket : Socket? = null
     var CONST = Consts()
-    var mediaController : MediaController? = null
     var timeRate : Long = 0
     var fileSize : Long = 0
     var secmdatSize : Long = 0
@@ -38,10 +38,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
     var aX = 0f
     var videoWidthPixel = 0
     var videoHeightPixel = 0
-    var bufferPosition = 0
-    lateinit var vv : VideoView
-    lateinit var lp : FrameLayout.LayoutParams
-    lateinit var flc : FrameLayout
+    var fileOver = false
     lateinit var retriever: MediaMetadataRetriever
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -119,24 +116,44 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
         //aX = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, aX.toFloat(), displayMetrics).toInt()
 
-        flc = findViewById(R.id.flc)
-        vv = findViewById(R.id.clientVideoView)
 
         var PreparedListener = MediaPlayer.OnPreparedListener {
             it.setVolume(0f, 0f)
         }
 
-        vv.setOnPreparedListener(PreparedListener)
-        vv.setVideoURI(Uri.parse(videoPath))
-        vv.layoutParams.width = W
-        vv.layoutParams.height = H
-        vv.setX(aX - 24)
+        clientVideoView.setOnPreparedListener(PreparedListener)
+        clientVideoView.setVideoURI(Uri.parse(videoPath))
+        clientVideoView.layoutParams.width = W
+        clientVideoView.layoutParams.height = H
+        clientVideoView.setX(aX - 24)
         Log.v("ClientPlayerActivity", "afterAD3 : "+aX)
-        vv.requestLayout()
-        vv.setOnErrorListener(object : MediaPlayer.OnErrorListener{
+        clientVideoView.requestLayout()
+        clientVideoView.setOnErrorListener(object : MediaPlayer.OnErrorListener{
             override fun onError(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
                 callAsyncTask(CONST.N_PLAYER_BUFFER)
-                vv.setVideoURI(Uri.parse(videoPath))
+                if(fileOver){
+                    Log.d("###", fileOver.toString())
+                }else {
+                    Log.d("####", "bufferStart")
+                    secmdatSize = (fileSize - moovSize) / videoLength
+                    var file = File(videoPath)
+                    var filelen = file.length()
+                    var afterFile = File(videoPath)
+                    var releaseLong = secmdatSize * 10
+                    //extract mpeg4 moov data for releaseLong
+                    while (afterFile.length() - filelen < releaseLong) {
+                        afterFile = File(videoPath)
+                        Log.d("###filesize", afterFile.length().toString())
+                        if (afterFile.length() == fileSize)
+                            break
+                    }
+                    if(afterFile.length() == fileSize){
+                        fileOver = true
+                    }
+                }
+                ClientBufferThread(CONST.N_PLAYER_READY_BUFFER, this@ClientPlayerActivity).start()
+                Log.d("####", "bufferOver")
+                clientVideoView.setVideoPath(videoPath)
                 return true
             }
         })
@@ -161,16 +178,22 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
 
     override fun forward(position: Int) {
         clientVideoView.pause()
-        var nowFileSize = File(videoPath).length()
-        if(nowFileSize == fileSize){
+        if(fileOver){
             clientVideoView.seekTo(position)
             callAsyncTask(CONST.N_READY_FORWARD)
         }else {
-            while (secmdatSize * (position / 1000) + moovSize > nowFileSize) {
-                nowFileSize = File(videoPath).length()
+            var nowFileSize = File(videoPath).length()
+            if (nowFileSize == fileSize) {
+                clientVideoView.seekTo(position)
+                callAsyncTask(CONST.N_READY_FORWARD)
+                fileOver = true
+            } else {
+                while (secmdatSize * (position / 1000) + moovSize > nowFileSize) {
+                    nowFileSize = File(videoPath).length()
+                }
+                clientVideoView.seekTo(position)
+                callAsyncTask(CONST.N_READY_FORWARD)
             }
-            clientVideoView.seekTo(position)
-            callAsyncTask(CONST.N_READY_FORWARD)
         }
 
     }
@@ -211,6 +234,9 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
             Log.d("###filesize", afterFile.length().toString())
             if(afterFile.length() == fileSize)
                 break
+        }
+        if(afterFile.length() == fileSize){
+            fileOver = true
         }
         ClientBufferThread(CONST.N_PLAYER_READY_BUFFER, this).start()
     }

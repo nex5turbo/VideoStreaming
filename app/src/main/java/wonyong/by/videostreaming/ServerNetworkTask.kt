@@ -168,6 +168,14 @@ class ServerNetworkTask(var mode : String, var activity: ServerActivity?, var pl
                 }
                 playerActivityData?.pauseVideo()
             }
+            CONST.N_BUFFER_OVER->{
+                for(sock : Socket in playerSocketList!!){
+                    var dos = DataOutputStream(sock.getOutputStream())
+                    dos.writeUTF(CONST.N_BUFFER_OVER)
+                    dos.writeUTF(playerActivityData?.bufferPosition.toString())
+                }
+                playerActivityData?.callAsyncTask(CONST.N_PLAYER_PLAY)
+            }
             CONST.N_PLAYER_BACKWARD->{
                 for(sock : Socket in playerSocketList!!){
                     var dos = DataOutputStream(sock.getOutputStream())

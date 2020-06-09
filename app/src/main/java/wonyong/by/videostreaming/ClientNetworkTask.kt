@@ -122,6 +122,7 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                 dos.writeUTF(CONST.N_PLAYER_BUFFER)
                 var receiveMessage = dis.readUTF()
                 while(receiveMessage.equals("FORWARDING")){
+                    Log.d("###while", receiveMessage)
                     sleep(500)
                     dos.writeUTF(CONST.N_PLAYER_BUFFER)
                     receiveMessage = dis.readUTF()
@@ -143,13 +144,11 @@ class ClientNetworkTask(var mode:String, val activity : ClientActivity?, val pla
                 when(receiveMessage){
                     CONST.N_PLAYER_BUFFER->{
                         playerActivityData?.pauseVideo()
-                        receiveMessage = dis.readUTF()
-                        playerActivityData?.bufferPosition = receiveMessage.toInt()
-                        playerActivityData?.setAfterBuffered(receiveMessage.toInt())
-
                     }
                     CONST.N_BUFFER_OVER->{
-                        playerActivityData?.bufferOver(playerActivityData!!.bufferPosition)
+                        receiveMessage = dis.readUTF()
+                        var position = receiveMessage.toInt()
+                        playerActivityData?.bufferOver(position)
                     }
                     CONST.N_PLAYER_PLAY->{
                         playerActivityData?.playVideo()

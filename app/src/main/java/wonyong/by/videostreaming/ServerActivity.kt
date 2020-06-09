@@ -1,6 +1,7 @@
 package wonyong.by.videostreaming
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -14,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -267,6 +269,11 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         var selectFile = File(resultPath+"/"+fileName)
         fileSize = selectFile.length()
 
+        if(!selectFile.exists()){
+            Toast.makeText(this, "존재하지 않는 파일입니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         var fis = FileInputStream(selectFile)
         var bis = BufferedInputStream(fis)
         var buf = ByteArray(4)
@@ -308,6 +315,34 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         var moovMsg = String(moovBuff)
         if(!moovMsg.contains("moov")){
             Log.d("###moov", "Not available to Stream")
+            val builder = AlertDialog.Builder(this)
+
+            builder.setTitle("파일변환")
+                .setMessage("스트리밍용 파일이 아닙니다.\n스트리밍용으로 변환하시겠습니까?\n(원본파일은 보존됩니다.)")
+                .setPositiveButton("예", object : DialogInterface.OnClickListener{
+                    override fun onClick(p0: DialogInterface?, p1: Int) {
+                        Toast.makeText(this@ServerActivity, "파일 변환중입니다...", Toast.LENGTH_SHORT).show()
+                        var thread = Thread(object : Runnable{
+                            override fun run() {
+                                var outFile = File(resultPath+"/moov"+fileName)
+                                if(!outFile.exists()){
+                                    outFile.createNewFile()
+                                }
+                                QtFastStartMy.fastStart(selectFile, outFile, this@ServerActivity)
+                            }
+                        })
+                        thread.start()
+                    }
+                })
+                .setNegativeButton("아니오", object : DialogInterface.OnClickListener{
+                    override fun onClick(p0: DialogInterface?, p1: Int) {
+
+                    }
+                })
+
+            val alertDialog = builder.create()
+
+            alertDialog.show()
             return
         }
         Log.d("###moov", moovSize.toString())
@@ -350,7 +385,6 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
     }
 
     override fun filetransferOver() {
-        serverWifiDirectConnectionStatus.setText("파일전송이 완료되었습니다.")
     }
 
     override fun sendEnable() {
