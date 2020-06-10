@@ -1,6 +1,5 @@
 package wonyong.by.videostreaming
 
-import android.content.Context
 import android.util.Log
 import android.widget.Toast
 
@@ -13,9 +12,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 
-object QtFastStartMy {
-    var sDEBUG = false
-
+class QtFastStartMy {
     val FREE_ATOM = fourCcToInt(byteArrayOf('f'.toByte(), 'r'.toByte(), 'e'.toByte(), 'e'.toByte()))
     val JUNK_ATOM = fourCcToInt(byteArrayOf('j'.toByte(), 'u'.toByte(), 'n'.toByte(), 'k'.toByte()))
     val MDAT_ATOM = fourCcToInt(byteArrayOf('m'.toByte(), 'd'.toByte(), 'a'.toByte(), 't'.toByte()))
@@ -88,14 +85,14 @@ object QtFastStartMy {
         return size == buffer.capacity()
     }
 
-    fun fastStart(`in`: File, out: File, context: ServerActivity): Boolean {
+    fun fastStart(infile: File, outfile: File, context: ServerActivity): Boolean {
         var ret = false
         var inStream: FileInputStream? = null
         var outStream: FileOutputStream? = null
         try {
-            inStream = FileInputStream(`in`)
+            inStream = FileInputStream(infile)
             val infile = inStream.channel
-            outStream = FileOutputStream(out)
+            outStream = FileOutputStream(outfile)
             val outfile = outStream.channel
             ret = fastStartImpl(infile, outfile)
             context.runOnUiThread(object : Runnable{
@@ -108,7 +105,7 @@ object QtFastStartMy {
             safeClose(inStream)
             safeClose(outStream)
             if (!ret) {
-                out.delete()
+                outfile.delete()
             }
         }
     }
@@ -149,13 +146,7 @@ object QtFastStartMy {
                     infile.position(infile.position() + atomSize - ATOM_PREAMBLE_SIZE) // seek
                 }
             }
-            if (sDEBUG) {
-                atomType shr 24 and 255
-                atomType shr 16 and 255
-                atomType shr 8 and 255
-                atomType shr 0 and 255
-                infile.position() - atomSize
-            }
+
             if (atomType != FREE_ATOM
                 && atomType != JUNK_ATOM
                 && atomType != MDAT_ATOM

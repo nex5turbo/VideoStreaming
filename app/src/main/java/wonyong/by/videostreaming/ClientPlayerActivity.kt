@@ -150,6 +150,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
                     if(afterFile.length() == fileSize){
                         fileOver = true
                     }
+                    sleep(500)
                 }
                 ClientBufferThread(CONST.N_PLAYER_READY_BUFFER, this@ClientPlayerActivity).start()
                 Log.d("####", "bufferOver")

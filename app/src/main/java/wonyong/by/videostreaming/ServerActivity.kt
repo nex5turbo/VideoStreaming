@@ -328,7 +328,7 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
                                 if(!outFile.exists()){
                                     outFile.createNewFile()
                                 }
-                                QtFastStartMy.fastStart(selectFile, outFile, this@ServerActivity)
+                                QtFastStartMy().fastStart(selectFile, outFile, this@ServerActivity)
                             }
                         })
                         thread.start()
