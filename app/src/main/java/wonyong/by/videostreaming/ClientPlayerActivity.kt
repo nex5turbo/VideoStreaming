@@ -57,6 +57,7 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
             Log.d("###", "Before Task")
             callAsyncTask(CONST.L_PLAYER_ON_CONNECT)
             socketButton.visibility = GONE
+            numText.visibility = GONE
         }
 
     }
@@ -75,6 +76,8 @@ class ClientPlayerActivity : AppCompatActivity(), PlayerListener {
             checkMoov = File(videoPath).length()
         }
         socketButton.visibility = View.VISIBLE
+        numText.visibility = View.VISIBLE
+        numText.text = deviceInfo.deviceOrder.toString()
         retriever = MediaMetadataRetriever()
         retriever.setDataSource(videoPath)
         videoLength = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()

@@ -84,9 +84,6 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
             callAsyncTask(CONST.L_ON_CONNECT)
         }
 
-        clientWifiDirectTcpButton.setOnClickListener {
-
-        }
 
         clientWifiDirectRefreshButton.setOnClickListener {
             if(ContextCompat.checkSelfPermission(this@ClientActivity,
@@ -155,12 +152,6 @@ class ClientActivity : AppCompatActivity(), ClientTaskListener {
             })
         }
 
-        clientWifiDirectFindVideoButton.setOnClickListener {
-            var i = Intent(Intent.ACTION_GET_CONTENT)
-            i.setType("video/*")
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivityForResult(i, 2)
-        }
     }
 
     private fun init() {

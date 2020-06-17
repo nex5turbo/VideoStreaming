@@ -20,4 +20,9 @@
             android:layout_gravity="bottom|center_horizontal"
             android:text="배치완료"
     />
+    <TextView
+            android:id="@+id/numText"
+            android:layout_width="match_parent"
+            android:layout_height="583dp" android:gravity="center" android:textColor="@android:color/background_light"
+            android:textSize="150sp"/>
 </FrameLayout>

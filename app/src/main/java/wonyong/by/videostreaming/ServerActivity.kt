@@ -297,10 +297,11 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         Log.d("###", selectFile.length().toString())
 
         var meg = String(buf2)
-        if(!meg.contains("ftyp")) {
-            Log.d("###ftyp", "Not available to Stream")
-            return
-        }
+        Log.d("###moov", meg)
+//        if(!meg.contains("ftyp")) {
+//            Log.d("###ftyp", "Not available to Stream")
+//            return
+//        }
 
         var buf3 = ByteArray(4)
         bis.read(buf3)
@@ -313,8 +314,9 @@ class ServerActivity : AppCompatActivity(), ServerTaskListener{
         var moovBuff = ByteArray(moovSize)
         bis.read(moovBuff)
         var moovMsg = String(moovBuff)
+        Log.d("###moov", moovMsg)
         if(!moovMsg.contains("moov")){
-            Log.d("###moov", "Not available to Stream")
+            Log.d("###", "Not available to Stream")
             val builder = AlertDialog.Builder(this)
 
             builder.setTitle("파일변환")

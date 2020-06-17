@@ -11,6 +11,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.GONE
 import android.view.WindowManager
 import android.widget.MediaController
 import android.widget.SeekBar
@@ -48,6 +49,12 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
         videoPath = intent.getStringExtra("videoPath")
         totalWidthMM = intent.getFloatExtra("videoSize", 0f)
         aX = -(intent.getFloatExtra("aX", 0f))
+        controllerPlayButton.visibility = View.GONE
+        controllerPauseButton.visibility = View.GONE
+        forwardButton.visibility = View.GONE
+        backwardButton.visibility = View.GONE
+        seekBar.visibility = View.GONE
+        numText2.text = "3"
         init()
         setVideo()
     }
@@ -85,6 +92,15 @@ class ServerPlayerActivity : AppCompatActivity(), PlayerListener {
                 )
             }
         })
+        socketButton2.setOnClickListener {
+            socketButton2.visibility = GONE
+            numText2.visibility = GONE
+            controllerPlayButton.visibility = View.VISIBLE
+            controllerPauseButton.visibility = View.VISIBLE
+            forwardButton.visibility = View.VISIBLE
+            backwardButton.visibility = View.VISIBLE
+            seekBar.visibility = View.VISIBLE
+        }
     }
 
     private fun setVideo() {
