@@ -3,8 +3,10 @@
 ## 결과화면
 ![result](https://user-images.githubusercontent.com/50979183/90458094-5fce5f80-e138-11ea-897f-bbd9124f4ea1.png)
 
+## 시연영상
+![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://www.youtube.com/watch?v=QKAQjdldyWg)
 
-# Wifi-Direct
+## Wifi-Direct
 생각보다 많이 구리다...    
 거의 모든 핸드폰이 와이파이 다이렉트 기능을 제공하긴 하는데,    
 안드로이드 스튜디오에서 와이파이 다이렉트를 사용하려고 하면    
@@ -18,7 +20,7 @@
 사용했지만, 와이파이 다이렉트는 별로인걸로..    
     
     
-# Network
+## Network
 사실 이거 만들면서 80% 이상의 시간을 할애한 부분이다.    
 네트워크 프로그래밍 수업때 소켓을 처음써보고 2년만에 다시 사용했다.    
 그 당시 프로젝트 할 때는 로컬에서 통신했기 때문에 아이피는 따로 생각할    
