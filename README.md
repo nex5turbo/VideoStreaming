@@ -4,7 +4,7 @@
 ![result](https://user-images.githubusercontent.com/50979183/90458094-5fce5f80-e138-11ea-897f-bbd9124f4ea1.png)
 
 ## 시연영상
-![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://www.youtube.com/watch?v=QKAQjdldyWg)
+![Watch the video](https://img.youtube.com/vi/QKAQjdldyWg/0.jpg)]    (https://www.youtube.com/watch?v=QKAQjdldyWg)
 
 ## Wifi-Direct
 생각보다 많이 구리다...    
