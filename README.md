@@ -4,7 +4,9 @@
 ![result](https://user-images.githubusercontent.com/50979183/90458094-5fce5f80-e138-11ea-897f-bbd9124f4ea1.png)
 
 ## 시연영상
-![Watch the video](https://img.youtube.com/vi/QKAQjdldyWg/0.jpg)     (https://www.youtube.com/watch?v=QKAQjdldyWg)
+![Watch the video](https://img.youtube.com/vi/QKAQjdldyWg/0.jpg)     
+    
+(https://www.youtube.com/watch?v=QKAQjdldyWg)
 
 ## UI Design
 사실 고민하지 않았다.
