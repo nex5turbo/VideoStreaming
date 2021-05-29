@@ -62,7 +62,9 @@ DisplayMetrics로 핸드폰의 dpi(dot per inch)와 화면 가로, 세로의 mm 
 그리고 핸드폰의 위치에 맞게 VideoView의 위치를 조정해주면 된다.    
 그림으로 보면 다음처럼 되는 것이다.    
     
-..그림    
+![제목 없음](https://user-images.githubusercontent.com/50979183/120074589-87dfeb80-c0d8-11eb-8a4b-7e4e46de75d3.png)
+![제목 없음2](https://user-images.githubusercontent.com/50979183/120074596-90382680-c0d8-11eb-8a2b-6bf7ebcce886.png)
+![제목 없음3](https://user-images.githubusercontent.com/50979183/120074609-9c23e880-c0d8-11eb-95fa-7a05f52148fe.png)
     
 근데 VideoView의 가로만 늘려줘서 그런지 늘어나지 않은 세로의 크기에 맞춰서 재생이 된다.    
 그래서 동영상의 해상도를 이용해 가로를 늘린만큼 세로도 늘려줬다...ㅎㅎ    
